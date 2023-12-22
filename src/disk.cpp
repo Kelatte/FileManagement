@@ -199,11 +199,16 @@ int brelse(buffer_head* bh) {
 		bh->b_count--;
 		return 1;
 	}
-	if (bh->b_dirt)
+	for (auto i : blocks)
 	{
-		//先不写回,syncy一次性写回
-		//bwrite(bh->b_blocknr, bh->b_data);
-		//bh->b_dirt = 0;
+		auto bh = i.second;
+		if (bh->b_dirt)
+		{
+			//printf("WARING %d b_count!=0 \n",i.first);
+			printf("%d block write\n", i.first);
+			bwrite(bh->b_blocknr, bh->b_data);
+			bh->b_dirt = 0;
+		}
 	}
 	bh->b_count--;
 	//暂且不考虑内存的释放

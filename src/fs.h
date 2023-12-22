@@ -7,12 +7,16 @@
 #define NAME_LEN 14
 #define BLOCK_SIZE 1024
 #define BLOCK_BIT (BLOCK_SIZE*8)
+/*dev是设备号，ino是根节点的INODE号 初始化时候会读取磁盘的根目录*/
+/*超级块是存放在磁盘的第一个block，用bread(1)读取*/
 #define ROOT_INO 1
 #define ROOT_DEV 0
 /*一个block中inode个数---32*/
 #define INODES_PER_BLOCK ((BLOCK_SIZE)/(sizeof (struct d_inode)))
 #define SUPER_MAGIC 0x137F
+/**/
 #define NR_OPEN 20
+/*内存中最多的inode的数量*/
 #define NR_INODE 32
 #define NR_SUPER 8
 
@@ -24,6 +28,7 @@
 
 /*一块中目录项的个数---64*/
 #define DIR_ENTRIES_PER_BLOCK ((BLOCK_SIZE)/(sizeof (struct dir_entry)))
+/**/
 #define I_MAP_SLOTS 8
 #define Z_MAP_SLOTS 8
 

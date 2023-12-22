@@ -73,7 +73,8 @@ void mount_root(void)
 	mi->i_count += 2;
 	fileSystem->name = "/";
 	free = 0;
-	i = p->s_nzones;
+	// bug?
+	i = p->s_nzones + 1;
 	//统计位图信息，给出磁盘上空闲的i节点和逻辑块
 	while (--i >= 0)
 		if(!get_bit(i% BLOCK_BIT,p->s_zmap[i/ BLOCK_BIT]->b_data))
