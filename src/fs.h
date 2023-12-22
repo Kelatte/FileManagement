@@ -52,7 +52,7 @@ typedef char buffer_block[BLOCK_SIZE];
 
 struct buffer_head {
 	char * b_data;			/* pointer to data block (1024 bytes) */
-	unsigned long b_blocknr;	/* block number */
+	unsigned int b_blocknr;	/* block number */
 	unsigned short b_dev;		/* device (0 = free) */
 	unsigned char b_uptodate;
 	unsigned char b_dirt;		/* 0-clean,1-dirty */
@@ -72,7 +72,7 @@ struct d_super_block {
 	unsigned short s_zmap_blocks; /*逻辑块位图的数据块个数*/
 	unsigned short s_firstdatazone;/*第一个数据块的编号*/
 	unsigned short s_log_zone_size;
-	unsigned long s_max_size;
+	unsigned int s_max_size;
 	unsigned short s_magic;/*文件类型*/
 };
 //内存中超级块
@@ -83,7 +83,7 @@ struct super_block {
 	unsigned short s_zmap_blocks;
 	unsigned short s_firstdatazone;
 	unsigned short s_log_zone_size;
-	unsigned long s_max_size;
+	unsigned int s_max_size;
 	unsigned short s_magic;
 	/* These are only in memory */
 	struct buffer_head * s_imap[8];/*i节点位图数组*/
@@ -91,7 +91,7 @@ struct super_block {
 	unsigned short s_dev;
 	struct m_inode * s_isup;
 	struct m_inode * s_imount;
-	unsigned long s_time;
+	unsigned int s_time;
 	struct task_struct * s_wait;
 	unsigned char s_lock;
 	unsigned char s_rd_only;
@@ -106,8 +106,8 @@ struct dir_entry {
 struct d_inode {
 	unsigned short i_mode;
 	unsigned short i_uid;
-	unsigned long i_size;
-	unsigned long i_time;
+	unsigned int i_size;
+	unsigned int i_time;
 	unsigned char i_gid;
 	/*有多少个文件目录项指向该节点*/
 	unsigned char i_nlinks;
@@ -117,15 +117,15 @@ struct d_inode {
 struct m_inode {
 	unsigned short i_mode;
 	unsigned short i_uid;
-	unsigned long i_size;
-	unsigned long i_mtime;
+	unsigned int i_size;
+	unsigned int i_mtime;
 	unsigned char i_gid;
 	unsigned char i_nlinks;
 	unsigned short i_zone[9];
 	/* these are in memory also */
 	struct task_struct * i_wait;
-	unsigned long i_atime;
-	unsigned long i_ctime;
+	unsigned int i_atime;
+	unsigned int i_ctime;
 	unsigned short i_dev;
 	unsigned short i_num;
 	unsigned short i_count;

@@ -235,6 +235,7 @@ int cmd_ls()
 		pinfoc("该目录为空");
 	}
 	cout << endl;
+	return 0;
 }
 
 /*stat命令，显示文件详细信息*/
