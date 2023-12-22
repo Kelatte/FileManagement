@@ -55,6 +55,7 @@
 //磁盘块
 typedef char buffer_block[BLOCK_SIZE];
 
+// 用于缓冲读入与写出磁盘块
 struct buffer_head {
 	char * b_data;			/* pointer to data block (1024 bytes) */
 	unsigned int b_blocknr;	/* block number */
@@ -107,7 +108,7 @@ struct dir_entry {
 	unsigned short inode;
 	char name[NAME_LEN];
 };
-//磁盘中inode节点
+//磁盘中inode节点，即FCB，记录文件的meta-data与其存放的数据块位置
 struct d_inode {
 	unsigned short i_mode;
 	unsigned short i_uid;
@@ -116,7 +117,7 @@ struct d_inode {
 	unsigned char i_gid;
 	/*有多少个文件目录项指向该节点*/
 	unsigned char i_nlinks;
-	unsigned short i_zone[9];
+	unsigned short i_zone[9]; // 信息放在数据区的第x个块
 };
 //内存中inode节点
 struct m_inode {
@@ -131,9 +132,9 @@ struct m_inode {
 	struct task_struct * i_wait;
 	unsigned int i_atime;
 	unsigned int i_ctime;
-	unsigned short i_dev;
-	unsigned short i_num;
-	unsigned short i_count;
+	unsigned short i_dev; // 设备号
+	unsigned short i_num; // 第x个i节点
+	unsigned short i_count; // 在内存中被多少个文件所使用
 	unsigned char i_lock;
 	unsigned char i_dirt;
 	unsigned char i_pipe;

@@ -18,16 +18,18 @@ int open_file(const char * pathname, int flag, int mode,
 	struct buffer_head * bh;
 	struct dir_entry * de;
 
+	// 下面是先找文件夹，能否直接找文件？
 	if (!(dir = dir_namei(pathname, &namelen, &basename)))
 		return -ENOENT;
-	if (!namelen) {			/* special case: '/usr/' etc */
+	if (!namelen) {			/* special case: '/usr/' etc */ // 打开的不是文件，而是文件夹
 		iput(dir);
 		return -EISDIR;
 	}
-	/*如果打开的文件不存在，则创建它*/
 
 	bh = find_entry(&dir, basename, namelen, &de);
+	// de 被指的目录项
 	if (!bh) {
+		/*如果打开的文件不存在，则创建它*/
 		inode = new_inode(dir->i_dev);
 		if (!inode) {
 			iput(dir);
@@ -37,13 +39,13 @@ int open_file(const char * pathname, int flag, int mode,
 		inode->i_dirt = 1;
 		bh = add_entry(dir, basename, namelen, &de);
 		if (!bh) {
-			inode->i_nlinks--;
+			inode->i_nlinks--; // TODO: 为什么要减，原来是1吗
 			iput(inode);
 			iput(dir);
 			return -ENOSPC;
 		}
 		de->inode = inode->i_num;
-		bh->b_dirt = 1;
+		bh->b_dirt = 1; // 该目录项所在的块，有一部分修改了即dirt
 		brelse(bh);
 		iput(dir);
 		*res_inode = inode;
@@ -72,9 +74,12 @@ int file_read(struct m_inode * inode, struct file * filp, char * buf, int count)
 
 	if ((left = count) <= 0)
 		return 0;
-	if (filp->f_flags != O_RDONLY && filp->f_flags != O_RDWR)
+	// 应该判断位吧？有APPEND
+	// if (filp->f_flags != O_RDONLY && filp->f_flags != O_RDWR)
+	if (~filp->f_flags & 1)
 		return -EACCES;
 
+	// 能否用memcpy读而非一个一个读
 	while (left) {
 		if ((nr = bmap(inode, (filp->f_pos) / BLOCK_SIZE))) {
 			if (!(bh = bread(nr)))

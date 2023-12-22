@@ -63,6 +63,7 @@ static struct m_inode * get_empty_inode()
 	{
 		printf("inode_table 空间不足");
 		//特殊状况暂且不做处理，应该不会遇到，毕竟是单线程
+		return NULL;
 	}
 	memset(inode, 0, sizeof(*inode));
 	inode->i_count = 1;
@@ -103,10 +104,11 @@ static void read_inode(struct m_inode * inode)
 	if (!(sb = get_super(inode->i_dev)))
 		printf("trying to read inode without dev");
 	block = 2 + sb->s_imap_blocks + sb->s_zmap_blocks +
-		(inode->i_num - 1) / INODES_PER_BLOCK;
+		(inode->i_num - 1) / INODES_PER_BLOCK; // 2 是一个引导块一个超级块？-1是因为从1开始吗？
 	if (!(bh = bread(block)))
 		printf("unable to read i-node block");
 
+	// 该磁盘块上的inode都读，但暂时只用这一个
 	*(struct d_inode *)inode =
 		((struct d_inode *)bh->b_data)
 		[(inode->i_num - 1) % INODES_PER_BLOCK];
