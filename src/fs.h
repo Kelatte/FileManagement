@@ -9,25 +9,25 @@
 #define BLOCK_BIT (BLOCK_SIZE*8)
 #define ROOT_INO 1
 #define ROOT_DEV 0
-/*Ò»¸öblockÖĞinode¸öÊı---32*/
+/*ä¸€ä¸ªblockä¸­inodeä¸ªæ•°---32*/
 #define INODES_PER_BLOCK ((BLOCK_SIZE)/(sizeof (struct d_inode)))
 #define SUPER_MAGIC 0x137F
 #define NR_OPEN 20
 #define NR_INODE 32
 #define NR_SUPER 8
 
-/*ÎÄ¼ş¶ÁĞ´È¨ÏŞ*/
+/*æ–‡ä»¶è¯»å†™æƒé™*/
 #define O_RDONLY 1
 #define O_WRONLY 2
 #define O_RDWR 3
-#define O_APPEND 4 //appendÄ£Ê½¼´¿É¶ÁÓÖ¿ÉĞ´£¬Ğ´Ö»ÄÜÔÚÎÄ¼şÄ©Î²Ìí¼Ó
+#define O_APPEND 4 //appendæ¨¡å¼å³å¯è¯»åˆå¯å†™ï¼Œå†™åªèƒ½åœ¨æ–‡ä»¶æœ«å°¾æ·»åŠ 
 
-/*Ò»¿éÖĞÄ¿Â¼ÏîµÄ¸öÊı---64*/
+/*ä¸€å—ä¸­ç›®å½•é¡¹çš„ä¸ªæ•°---64*/
 #define DIR_ENTRIES_PER_BLOCK ((BLOCK_SIZE)/(sizeof (struct dir_entry)))
 #define I_MAP_SLOTS 8
 #define Z_MAP_SLOTS 8
 
-/*¶¨ÒåÎÄ¼şÀàĞÍ*/
+/*å®šä¹‰æ–‡ä»¶ç±»å‹*/
 #define S_IFMT  00170000
 #define S_IFREG  0100000
 #define S_IFBLK  0060000
@@ -47,7 +47,7 @@
 
 #define reverse_bit(x,y)  x^=(1<<y)
 
-//´ÅÅÌ¿é
+//ç£ç›˜å—
 typedef char buffer_block[BLOCK_SIZE];
 
 struct buffer_head {
@@ -64,18 +64,18 @@ struct buffer_head {
 	struct buffer_head * b_prev_free;
 	struct buffer_head * b_next_free;
 };
-//³¬¼¶¿é
+//è¶…çº§å—
 struct d_super_block {
-	unsigned short s_ninodes; /*i½ÚµãÊı*/
-	unsigned short s_nzones;  /*Êı¾İ¿éÊı*/
-	unsigned short s_imap_blocks; /*i½ÚµãÎ»Í¼µÄÊı¾İ¿é¸öÊı*/
-	unsigned short s_zmap_blocks; /*Âß¼­¿éÎ»Í¼µÄÊı¾İ¿é¸öÊı*/
-	unsigned short s_firstdatazone;/*µÚÒ»¸öÊı¾İ¿éµÄ±àºÅ*/
+	unsigned short s_ninodes; /*ièŠ‚ç‚¹æ•°*/
+	unsigned short s_nzones;  /*æ•°æ®å—æ•°*/
+	unsigned short s_imap_blocks; /*ièŠ‚ç‚¹ä½å›¾çš„æ•°æ®å—ä¸ªæ•°*/
+	unsigned short s_zmap_blocks; /*é€»è¾‘å—ä½å›¾çš„æ•°æ®å—ä¸ªæ•°*/
+	unsigned short s_firstdatazone;/*ç¬¬ä¸€ä¸ªæ•°æ®å—çš„ç¼–å·*/
 	unsigned short s_log_zone_size;
 	unsigned int s_max_size;
-	unsigned short s_magic;/*ÎÄ¼şÀàĞÍ*/
+	unsigned short s_magic;/*æ–‡ä»¶ç±»å‹*/
 };
-//ÄÚ´æÖĞ³¬¼¶¿é
+//å†…å­˜ä¸­è¶…çº§å—
 struct super_block {
 	unsigned short s_ninodes;
 	unsigned short s_nzones;
@@ -86,8 +86,8 @@ struct super_block {
 	unsigned int s_max_size;
 	unsigned short s_magic;
 	/* These are only in memory */
-	struct buffer_head * s_imap[8];/*i½ÚµãÎ»Í¼Êı×é*/
-	struct buffer_head * s_zmap[8];/*Âß¼­½ÚµãÎ»Í¼Êı×é*/
+	struct buffer_head * s_imap[8];/*ièŠ‚ç‚¹ä½å›¾æ•°ç»„*/
+	struct buffer_head * s_zmap[8];/*é€»è¾‘èŠ‚ç‚¹ä½å›¾æ•°ç»„*/
 	unsigned short s_dev;
 	struct m_inode * s_isup;
 	struct m_inode * s_imount;
@@ -97,23 +97,23 @@ struct super_block {
 	unsigned char s_rd_only;
 	unsigned char s_dirt;
 };
-//Ä¿Â¼Ïî
+//ç›®å½•é¡¹
 struct dir_entry {
 	unsigned short inode;
 	char name[NAME_LEN];
 };
-//´ÅÅÌÖĞinode½Úµã
+//ç£ç›˜ä¸­inodeèŠ‚ç‚¹
 struct d_inode {
 	unsigned short i_mode;
 	unsigned short i_uid;
 	unsigned int i_size;
 	unsigned int i_time;
 	unsigned char i_gid;
-	/*ÓĞ¶àÉÙ¸öÎÄ¼şÄ¿Â¼ÏîÖ¸Ïò¸Ã½Úµã*/
+	/*æœ‰å¤šå°‘ä¸ªæ–‡ä»¶ç›®å½•é¡¹æŒ‡å‘è¯¥èŠ‚ç‚¹*/
 	unsigned char i_nlinks;
 	unsigned short i_zone[9];
 };
-//ÄÚ´æÖĞinode½Úµã
+//å†…å­˜ä¸­inodeèŠ‚ç‚¹
 struct m_inode {
 	unsigned short i_mode;
 	unsigned short i_uid;
@@ -179,7 +179,7 @@ struct m_inode *get_father(struct m_inode * inode);
 void init_inode_table();
 void realse_inode_table();
 void realse_all_blocks();
-/*Î»Í¼²Ù×÷º¯Êı*/
+/*ä½å›¾æ“ä½œå‡½æ•°*/
 int find_first_zero(char* data);
 int get_bit(int k, char* data);
 int clear_bit(int k, char* data);

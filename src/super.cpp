@@ -8,7 +8,7 @@ struct super_block * get_super(int dev)
 	return sb[0];
 }
 
-/*¶ÁÈë³¬¼¶¿éĞÅÏ¢*/
+/*è¯»å…¥è¶…çº§å—ä¿¡æ¯*/
 static struct super_block * read_super(int dev)
 {
 	auto s = new super_block;
@@ -60,12 +60,12 @@ void mount_root(void)
 	struct m_inode * mi;
 	if (!(p = read_super(ROOT_DEV)))
 	{
-		printf("ÎŞ·¨¶ÁÈë³¬¼¶¿é");
+		printf("æ— æ³•è¯»å…¥è¶…çº§å—");
 		return;
 	}
 	if (!(mi = iget(ROOT_DEV,ROOT_INO)))
 	{
-		printf("ÎŞ·¨¶ÁÈë¸ùÄ¿Â¼");
+		printf("æ— æ³•è¯»å…¥æ ¹ç›®å½•");
 		return;
 	}
 	p->s_isup = p->s_imount = mi;
@@ -74,7 +74,7 @@ void mount_root(void)
 	fileSystem->name = "/";
 	free = 0;
 	i = p->s_nzones;
-	//Í³¼ÆÎ»Í¼ĞÅÏ¢£¬¸ø³ö´ÅÅÌÉÏ¿ÕÏĞµÄi½ÚµãºÍÂß¼­¿é
+	//ç»Ÿè®¡ä½å›¾ä¿¡æ¯ï¼Œç»™å‡ºç£ç›˜ä¸Šç©ºé—²çš„ièŠ‚ç‚¹å’Œé€»è¾‘å—
 	while (--i >= 0)
 		if(!get_bit(i% BLOCK_BIT,p->s_zmap[i/ BLOCK_BIT]->b_data))
 			free++;

@@ -20,7 +20,7 @@ int printfc(ForeColor fc, std::string str, ...)
 		va_end(p_list);
 
 #ifndef WIN32
-		printf("\e[0m");//¹Ø±ÕËùÓĞÊôĞÔ
+		printf("\e[0m");//å…³é—­æ‰€æœ‰å±æ€§
 #else
 		SetConsoleTextAttribute(hStd, oldInfo.wAttributes);
 	}

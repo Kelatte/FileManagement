@@ -2,13 +2,13 @@
  *  linux/fs/file_dev.c
  *
  *  (C) 1991  Linus Torvalds
- *		------------ÖÂ¾´£¬Ö»×öÁË²¿·Ö¼ò»¯
+ *		------------è‡´æ•¬ï¼Œåªåšäº†éƒ¨åˆ†ç®€åŒ–
  */
 #include"fs.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
-/*¸Ä×Ôopen_namei*/
+/*æ”¹è‡ªopen_namei*/
 int open_file(const char * pathname, int flag, int mode,
 	struct m_inode ** res_inode)
 {
@@ -24,7 +24,7 @@ int open_file(const char * pathname, int flag, int mode,
 		iput(dir);
 		return -EISDIR;
 	}
-	/*Èç¹û´ò¿ªµÄÎÄ¼ş²»´æÔÚ£¬Ôò´´½¨Ëü*/
+	/*å¦‚æœæ‰“å¼€çš„æ–‡ä»¶ä¸å­˜åœ¨ï¼Œåˆ™åˆ›å»ºå®ƒ*/
 
 	bh = find_entry(&dir, basename, namelen, &de);
 	if (!bh) {
@@ -49,7 +49,7 @@ int open_file(const char * pathname, int flag, int mode,
 		*res_inode = inode;
 		return 0;
 	}
-	/*ÎÄ¼ş´æÔÚ*/
+	/*æ–‡ä»¶å­˜åœ¨*/
 	inr = de->inode;
 	dev = dir->i_dev;
 	brelse(bh);

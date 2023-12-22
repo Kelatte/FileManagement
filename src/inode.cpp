@@ -1,24 +1,24 @@
 #include<iostream>
 #include"fs.h"
-/*¶Ôinode²Ù×÷Ìá¹©ÒÔÏÂ½Ó¿Ú£¬
-  ÔÚ´ÅÅÌÉÏ´´½¨Ò»¸öĞÂµÄinode
-  1. »ñÈ¡ÒÑ¾­ÔÚ´ÅÅÌÉÏ´æÔÚµÄinode iget()
-  2. ÔÚ´ÅÅÌÉÏ´´½¨Ò»¸öĞÂµÄinode  new_inode()
-  3. ÔÚ´ÅÅÌÉÏÉ¾³ı²¢Çå¿ÕÒ»¸öinode  free_inode()
-  4. ¶ÔÓÚ¶à½ø³Ì¶øÑÔ£¬ĞèÒª¶¨Òåiput ÈÃ½ø³Ì·ÅÆú¶ÔinodeµÄÊ¹ÓÃÈ¨
-£¡£¡£¡×¢Òâ Ä¿Ç°ÓÉÓÚÃ»ÓĞ¶à½ø³Ì£¬¹Ê¶ÔÓÚi_countµÈĞÅºÅÁ¿Ê¹ÓÃ²¢²»¹æ·¶
+/*å¯¹inodeæ“ä½œæä¾›ä»¥ä¸‹æ¥å£ï¼Œ
+  åœ¨ç£ç›˜ä¸Šåˆ›å»ºä¸€ä¸ªæ–°çš„inode
+  1. è·å–å·²ç»åœ¨ç£ç›˜ä¸Šå­˜åœ¨çš„inode iget()
+  2. åœ¨ç£ç›˜ä¸Šåˆ›å»ºä¸€ä¸ªæ–°çš„inode  new_inode()
+  3. åœ¨ç£ç›˜ä¸Šåˆ é™¤å¹¶æ¸…ç©ºä¸€ä¸ªinode  free_inode()
+  4. å¯¹äºå¤šè¿›ç¨‹è€Œè¨€ï¼Œéœ€è¦å®šä¹‰iput è®©è¿›ç¨‹æ”¾å¼ƒå¯¹inodeçš„ä½¿ç”¨æƒ
+ï¼ï¼ï¼æ³¨æ„ ç›®å‰ç”±äºæ²¡æœ‰å¤šè¿›ç¨‹ï¼Œæ•…å¯¹äºi_countç­‰ä¿¡å·é‡ä½¿ç”¨å¹¶ä¸è§„èŒƒ
 */
 
 
 
 /*
-  ÓÉÓÚ¿¼ÂÇµ½ÄÚ´æ¿Õ¼äºÍÊ¹ÓÃĞ§ÂÊµÄÌáÉı£¬Ê¹ÓÃinode_table´æ´¢ÒÑ¾­¶ÁÈëµ½ÄÚ´æÖĞµÄËùÓĞinode
-  inode_table ´óĞ¡Îª32£¬¼´ÒâÎ¶×Å¸ÃÏµÍ³ÔÚÄÚ´æÖĞ×î¶à±£Áô32¸öinode½Úµã
-  inode.i_count ´ú±íinodeµÄÒıÓÃÊı£¬µ±i_count=0 ¼´´ú±íÃ»ÓĞ½ø³ÌÊ¹ÓÃËü£¨ËäÈ»±¾ÏµÍ³Ã»ÓĞ¶à½ø³Ì£©
+  ç”±äºè€ƒè™‘åˆ°å†…å­˜ç©ºé—´å’Œä½¿ç”¨æ•ˆç‡çš„æå‡ï¼Œä½¿ç”¨inode_tableå­˜å‚¨å·²ç»è¯»å…¥åˆ°å†…å­˜ä¸­çš„æ‰€æœ‰inode
+  inode_table å¤§å°ä¸º32ï¼Œå³æ„å‘³ç€è¯¥ç³»ç»Ÿåœ¨å†…å­˜ä¸­æœ€å¤šä¿ç•™32ä¸ªinodeèŠ‚ç‚¹
+  inode.i_count ä»£è¡¨inodeçš„å¼•ç”¨æ•°ï¼Œå½“i_count=0 å³ä»£è¡¨æ²¡æœ‰è¿›ç¨‹ä½¿ç”¨å®ƒï¼ˆè™½ç„¶æœ¬ç³»ç»Ÿæ²¡æœ‰å¤šè¿›ç¨‹ï¼‰
  */
 static struct m_inode* inode_tabel[NR_INODE];
 static int head = 0;
-/*Ğ´»Øinode*/
+/*å†™å›inode*/
 static void write_inode(struct m_inode * inode)
 {
 	struct super_block * sb;
@@ -41,7 +41,7 @@ static void write_inode(struct m_inode * inode)
 	inode->i_dirt = 0;
 	brelse(bh);
 }
-/*ÉêÇë»ñÈ¡inode_table µÄ¿Õ¼ä£¬ÈÎºÎ¶ÁÈ¡µ½ÄÚ´æÖĞµÄinode ¶¼ĞèÒªÏÈÏòinode_tabelÉêÇë¿Õ¼ä*/
+/*ç”³è¯·è·å–inode_table çš„ç©ºé—´ï¼Œä»»ä½•è¯»å–åˆ°å†…å­˜ä¸­çš„inode éƒ½éœ€è¦å…ˆå‘inode_tabelç”³è¯·ç©ºé—´*/
 static struct m_inode * get_empty_inode()
 {
 	struct m_inode * inode = NULL;
@@ -61,22 +61,22 @@ static struct m_inode * get_empty_inode()
 
 	if (inode == NULL)
 	{
-		printf("inode_table ¿Õ¼ä²»×ã");
-		//ÌØÊâ×´¿öÔİÇÒ²»×ö´¦Àí£¬Ó¦¸Ã²»»áÓöµ½£¬±Ï¾¹ÊÇµ¥Ïß³Ì
+		printf("inode_table ç©ºé—´ä¸è¶³");
+		//ç‰¹æ®ŠçŠ¶å†µæš‚ä¸”ä¸åšå¤„ç†ï¼Œåº”è¯¥ä¸ä¼šé‡åˆ°ï¼Œæ¯•ç«Ÿæ˜¯å•çº¿ç¨‹
 	}
 	memset(inode, 0, sizeof(*inode));
 	inode->i_count = 1;
 	return inode;
 }
 
-/*³õÊ¼»¯inode_tabel*/
+/*åˆå§‹åŒ–inode_tabel*/
 void init_inode_table() {
 	for (int i = 0; i < NR_INODE; ++i)
 	{
 		inode_tabel[i] = new m_inode();
 	}
 }
-/*½«inode_tableËùÓĞĞÅÏ¢Ğ´»Ø´ÅÅÌ*/
+/*å°†inode_tableæ‰€æœ‰ä¿¡æ¯å†™å›ç£ç›˜*/
 void realse_inode_table() {
 	m_inode* inode;
 	for (int i = 0; i < NR_INODE; ++i)
@@ -93,7 +93,7 @@ void realse_inode_table() {
 }
 
 
-/*¶ÁÈë´ÅÅÌÉÏinode½Úµã*/
+/*è¯»å…¥ç£ç›˜ä¸ŠinodeèŠ‚ç‚¹*/
 static void read_inode(struct m_inode * inode)
 {
 	struct super_block * sb;
@@ -113,11 +113,11 @@ static void read_inode(struct m_inode * inode)
 	brelse(bh);
 }
 
-/*¸ø³öi½ÚµãºÅ£¬·µ»Øinode½Úµã*/
+/*ç»™å‡ºièŠ‚ç‚¹å·ï¼Œè¿”å›inodeèŠ‚ç‚¹*/
 struct m_inode *iget(int dev,int nr) 
 {
 	struct m_inode * inode;
-	/*Ê×ÏÈ²é¿´inodeÊÇ·ñÒÑ¾­ÔÚÄÚ´æÖĞ*/
+	/*é¦–å…ˆæŸ¥çœ‹inodeæ˜¯å¦å·²ç»åœ¨å†…å­˜ä¸­*/
 	for (int i = 0; i < NR_INODE; ++i)
 	{
 		inode = inode_tabel[i];
@@ -130,7 +130,7 @@ struct m_inode *iget(int dev,int nr)
 	inode = get_empty_inode();
 	inode->i_dev = dev;
 	inode->i_num = nr;
-	//´Ó´ÅÅÌÖĞ¶ÁÈ¡
+	//ä»ç£ç›˜ä¸­è¯»å–
 	read_inode(inode);
 	inode->i_dirt = 0;
 	inode->i_count = 1;
@@ -138,7 +138,7 @@ struct m_inode *iget(int dev,int nr)
 	return inode;
 }
 
-//É¾³ı´ÅÅÌÉÏµÄinode ½Úµã
+//åˆ é™¤ç£ç›˜ä¸Šçš„inode èŠ‚ç‚¹
 void free_inode(struct m_inode * inode)
 {
 	struct super_block * sb;
@@ -146,10 +146,10 @@ void free_inode(struct m_inode * inode)
 
 	if (!inode)
 		return;
-	/*Èç¹ûÒªÇå¿ÕµÄÎÄ¼ş½ÚµãÓĞÆäËû½ÚµãÖ¸ÏòËü£¬ÔòËµÃ÷³öÏÖbug*/
+	/*å¦‚æœè¦æ¸…ç©ºçš„æ–‡ä»¶èŠ‚ç‚¹æœ‰å…¶ä»–èŠ‚ç‚¹æŒ‡å‘å®ƒï¼Œåˆ™è¯´æ˜å‡ºç°bug*/
 	if (inode->i_nlinks)
 	{
-		printf("£¡£¡£¡BUG trying to free inode with links");
+		printf("ï¼ï¼ï¼BUG trying to free inode with links");
 		return;
 	}
 	if (!(sb = get_super(inode->i_dev)))
@@ -164,11 +164,11 @@ void free_inode(struct m_inode * inode)
 		printf("!!!BUG free_inode: bit already cleared.\n\r");
 	clear_bit(inode->i_num % BLOCK_BIT, bh->b_data);
 	bh->b_dirt = 1;
-	//ÕâÀïÖ»Çå¿ÕÁËÄÚ´æÖĞÊı¾İ£¬²¢²»»áÊµ¼ÊÇå¿Õ´ÅÅÌÉÏµÄÊı¾İ
+	//è¿™é‡Œåªæ¸…ç©ºäº†å†…å­˜ä¸­æ•°æ®ï¼Œå¹¶ä¸ä¼šå®é™…æ¸…ç©ºç£ç›˜ä¸Šçš„æ•°æ®
 	memset(inode, 0, sizeof(*inode));
 }
 
-/*´´½¨Ò»¸öĞÂµÄinode½Úµã£¬¸Ãinode½Úµã¶ÔÓ¦´ÅÅÌÉÏ¿ÕÏĞµÄÎ»ÖÃ*/
+/*åˆ›å»ºä¸€ä¸ªæ–°çš„inodeèŠ‚ç‚¹ï¼Œè¯¥inodeèŠ‚ç‚¹å¯¹åº”ç£ç›˜ä¸Šç©ºé—²çš„ä½ç½®*/
 struct m_inode * new_inode(int dev)
 {
 	struct m_inode * inode;
@@ -176,7 +176,7 @@ struct m_inode * new_inode(int dev)
 	struct buffer_head * bh;
 	int i, j;
 
-	/*ÉêÇë»ñÈ¡ÄÚ´æÖĞinodeµÄ¿Õ¼ä£¨inode_table)*/
+	/*ç”³è¯·è·å–å†…å­˜ä¸­inodeçš„ç©ºé—´ï¼ˆinode_table)*/
 	if (!(inode = get_empty_inode()))
 		return NULL;
 
@@ -191,17 +191,17 @@ struct m_inode * new_inode(int dev)
 		iput(inode);
 		return NULL;
 	}
-	//ĞŞ¸Äi½ÚµãÎ»Í¼
+	//ä¿®æ”¹ièŠ‚ç‚¹ä½å›¾
 	if (get_bit(j, bh->b_data))
 	{
-		//Î»Í¼ÒÑ¾­´æÔÚ£¬ËµÃ÷´úÂë³öÏÖbug
-		printf("£¡£¡£¡BUG new_inode: bit already set");
+		//ä½å›¾å·²ç»å­˜åœ¨ï¼Œè¯´æ˜ä»£ç å‡ºç°bug
+		printf("ï¼ï¼ï¼BUG new_inode: bit already set");
 		return 0;
 	}
 	set_bit(j, bh->b_data);
 	bh->b_dirt = 1;
 
-	//³õÊ¼»¯inode
+	//åˆå§‹åŒ–inode
 	inode->i_count = 1;
 	inode->i_nlinks = 1;
 	inode->i_dev = dev;
@@ -213,11 +213,11 @@ struct m_inode * new_inode(int dev)
 	return inode;
 }
 
-/*¶ÔÓÚ¶à½ø³Ì£¬iputÓÃÓÚ½ø³ÌÊÍ·ÅinodeµÄÊ¹ÓÃÈ¨£¬¼´Ê¹i_count¼õÒ»
-  µ±i_count=0 Ê±,Èô¸Ã½ÚµãÓĞ¹ıĞŞ¸Ä£¬ÔòÁ¢¼´Ğ´»Ø´ÅÅÌ£¬ÈçÎ´ĞŞ¸Ä£¬ÎŞĞèĞ´»Ø
-  µ«ĞèÒª×¢ÒâµÄÊÇ£¬i_count=0Ê±£¬²¢²»»áÁ¢¼´Çå¿Õ¸Ãinode½ÚµãÔÚinode_tableÖĞµÄÊı¾İ(¼´ÈÔÈ»±£ÁôÔÚÄÚ´æÖĞ£©
-  ÒòÎª¿ÉÄÜ¸Ã½ÚµãÖ®ºó»áÔÙ´Î±»ÓÃµ½£¬ÕâÑù¿ÉÒÔ¼õÉÙ´ÅÅÌ¶ÁÈ¡£¬ÌáÉıĞ§ÂÊ
-  Ö»ÓĞµ±inode_tableĞèÒªµÃµ½¿ÕµÄinodeÊ±£¬²Å»á½«¸ÃinodeÇå¿Õ,¾ßÌå¼û get_empty_inodeº¯Êı*/
+/*å¯¹äºå¤šè¿›ç¨‹ï¼Œiputç”¨äºè¿›ç¨‹é‡Šæ”¾inodeçš„ä½¿ç”¨æƒï¼Œå³ä½¿i_countå‡ä¸€
+  å½“i_count=0 æ—¶,è‹¥è¯¥èŠ‚ç‚¹æœ‰è¿‡ä¿®æ”¹ï¼Œåˆ™ç«‹å³å†™å›ç£ç›˜ï¼Œå¦‚æœªä¿®æ”¹ï¼Œæ— éœ€å†™å›
+  ä½†éœ€è¦æ³¨æ„çš„æ˜¯ï¼Œi_count=0æ—¶ï¼Œå¹¶ä¸ä¼šç«‹å³æ¸…ç©ºè¯¥inodeèŠ‚ç‚¹åœ¨inode_tableä¸­çš„æ•°æ®(å³ä»ç„¶ä¿ç•™åœ¨å†…å­˜ä¸­ï¼‰
+  å› ä¸ºå¯èƒ½è¯¥èŠ‚ç‚¹ä¹‹åä¼šå†æ¬¡è¢«ç”¨åˆ°ï¼Œè¿™æ ·å¯ä»¥å‡å°‘ç£ç›˜è¯»å–ï¼Œæå‡æ•ˆç‡
+  åªæœ‰å½“inode_tableéœ€è¦å¾—åˆ°ç©ºçš„inodeæ—¶ï¼Œæ‰ä¼šå°†è¯¥inodeæ¸…ç©º,å…·ä½“è§ get_empty_inodeå‡½æ•°*/
 void iput(struct m_inode * inode)
 {
 
@@ -229,11 +229,11 @@ void iput(struct m_inode * inode)
 		inode->i_count--;
 		return;
 	}
-	/*Èç¹ûÖ¸Ïò¸ÃinodeµÄÁ´½ÓÊıÎª 0£¬É¾³ı¸ÃÎÄ¼ş£¬Çå¿ÕinodeµÄËùÓĞÊı¾İÇø£¬²¢ÊÍ·Åinode½Úµã*/
+	/*å¦‚æœæŒ‡å‘è¯¥inodeçš„é“¾æ¥æ•°ä¸º 0ï¼Œåˆ é™¤è¯¥æ–‡ä»¶ï¼Œæ¸…ç©ºinodeçš„æ‰€æœ‰æ•°æ®åŒºï¼Œå¹¶é‡Šæ”¾inodeèŠ‚ç‚¹*/
 	if (!inode->i_nlinks) {
 		truncate(inode);
 		free_inode(inode);
-		//printf("******ÎÄ¼şÉ¾³ı******");
+		//printf("******æ–‡ä»¶åˆ é™¤******");
 		return;
 	}
 	if (inode->i_dirt) {
@@ -244,21 +244,21 @@ void iput(struct m_inode * inode)
 	return;
 }
 
-/*Âß¼­Êı¾İ¿éÓëÎïÀíÊı¾İ¿éµØÖ·×ª»»£¬¸ø³öÂß¼­Êı¾İ¿é£¬·µ»ØÎïÀíÊı¾İ¿é*/
+/*é€»è¾‘æ•°æ®å—ä¸ç‰©ç†æ•°æ®å—åœ°å€è½¬æ¢ï¼Œç»™å‡ºé€»è¾‘æ•°æ®å—ï¼Œè¿”å›ç‰©ç†æ•°æ®å—*/
 int bmap(struct m_inode * inode, int block)
 {
 	struct buffer_head * bh;
 	int i;
 	
 	if (block < 0)
-		printf("ÊÔÍ¼¶ÁÈ¡²»´æÔÚµÄÊı¾İ¿é");
+		printf("è¯•å›¾è¯»å–ä¸å­˜åœ¨çš„æ•°æ®å—");
 	if (block >= 7 + 512 + 512 * 512)
-		printf("ÊÔÍ¼¶ÁÈ¡³¬¹ı·¶Î§µÄÊı¾İ¿é");
-	/*Ö±½Ó²éÑ¯*/
+		printf("è¯•å›¾è¯»å–è¶…è¿‡èŒƒå›´çš„æ•°æ®å—");
+	/*ç›´æ¥æŸ¥è¯¢*/
 	if (block < 7) {
 		return inode->i_zone[block];
 	}
-	/*Ò»¼¶Ä¿Â¼²éÑ¯*/
+	/*ä¸€çº§ç›®å½•æŸ¥è¯¢*/
 	block -= 7;
 	if (block < 512) {
 		if (!inode->i_zone[7])
@@ -268,7 +268,7 @@ int bmap(struct m_inode * inode, int block)
 		brelse(bh);
 		return i;
 	}
-	/*¶ş¼¶Ä¿Â¼²éÑ¯*/
+	/*äºŒçº§ç›®å½•æŸ¥è¯¢*/
 	block -= 512;
 	if (!inode->i_zone[8])
 		return 0;
@@ -283,8 +283,8 @@ int bmap(struct m_inode * inode, int block)
 	return i;
 }
 
-/*¶ÁÈ¡Êı¾İ¿é£¬¸ø³öÒ»¸öi½Úµã£¬ÒÔ¼°Êı¾İ¿é±àºÅ£¬¶ÁÈ¡³öÊı¾İ¿é,
-	×¢Òâ£¡£¡£¡ Èç¹û¸ÃÊı¾İ¿é²»´æÔÚ£¬Ôò»á´´½¨Ëü*/
+/*è¯»å–æ•°æ®å—ï¼Œç»™å‡ºä¸€ä¸ªièŠ‚ç‚¹ï¼Œä»¥åŠæ•°æ®å—ç¼–å·ï¼Œè¯»å–å‡ºæ•°æ®å—,
+	æ³¨æ„ï¼ï¼ï¼ å¦‚æœè¯¥æ•°æ®å—ä¸å­˜åœ¨ï¼Œåˆ™ä¼šåˆ›å»ºå®ƒ*/
 int create_block(struct m_inode * inode, int block)
 {
 	struct buffer_head * bh;
@@ -304,19 +304,19 @@ int create_block(struct m_inode * inode, int block)
 	}
 	block -= 7;
 	if (block < 512) {
-		//Ê×ÏÈÅĞ¶ÏÒ»¼¶Ä¿Â¼ÊÇ·ñ´´½¨
+		//é¦–å…ˆåˆ¤æ–­ä¸€çº§ç›®å½•æ˜¯å¦åˆ›å»º
 		if (!inode->i_zone[7])
 			if ((inode->i_zone[7] = new_block(inode->i_dev))) {
 				inode->i_dirt = 1;
 				inode->i_ctime = CurrentTime();
 			}
-		//´´½¨Ê§°Ü
+		//åˆ›å»ºå¤±è´¥
 		if (!inode->i_zone[7])
 			return 0;
 		if (!(bh = bread(inode->i_zone[7])))
 			return 0;
 		i = ((unsigned short *)(bh->b_data))[block];
-		//ÅĞ¶Ï¾ßÌåblockÊÇ·ñ´´½¨£¬Ã»ÓĞ´´½¨Ôò´´½¨
+		//åˆ¤æ–­å…·ä½“blockæ˜¯å¦åˆ›å»ºï¼Œæ²¡æœ‰åˆ›å»ºåˆ™åˆ›å»º
 		if (!i)
 			if ((i = new_block(inode->i_dev))) {
 				((unsigned short *)(bh->b_data))[block] = i;
@@ -326,13 +326,13 @@ int create_block(struct m_inode * inode, int block)
 		return i;
 	}
 	block -= 512;
-	//Ê×ÏÈÅĞ¶Ï¶ş¼¶Ä¿Â¼ÊÇ·ñ´´½¨
+	//é¦–å…ˆåˆ¤æ–­äºŒçº§ç›®å½•æ˜¯å¦åˆ›å»º
 	if (!inode->i_zone[8])
 		if ((inode->i_zone[8] = new_block(inode->i_dev))) {
 			inode->i_dirt = 1;
 			inode->i_ctime = CurrentTime();
 		}
-	//´´½¨Ê§°Ü
+	//åˆ›å»ºå¤±è´¥
 	if (!inode->i_zone[8])
 		return 0;
 

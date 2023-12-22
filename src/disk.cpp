@@ -4,26 +4,26 @@
 #include"fs.h"
 using namespace std;
 /*
-Ä¿Ç°Ôİ²»ÉèÖÃÄÚ´æÖĞblocks µÄ´óĞ¡
-´ÅÅÌÕâ²¿·ÖÎªÍâ½çÌá¹©¼¸¸ö¹¦ÄÜ
-1. »ñÈ¡ÒÑ¾­ÔÚ´ÅÅÌÉÏ´æÔÚµÄÊı¾İ¿é bread()
-2. ÔÚ´ÅÅÌÉÏ´´½¨Ò»¸öĞÂµÄÊı¾İ¿é  new_block()
-3. ÔÚ´ÅÅÌÉÏÉ¾³ı²¢Çå¿ÕÒ»¸öÊı¾İ¿é  free_block()
-4. ¶ÔÓÚ¶à½ø³Ì¶øÑÔ£¬ĞèÒª¶¨Òåbrelse ÈÃ½ø³Ì·ÅÆú¶ÔblockµÄÊ¹ÓÃÈ¨
-£¡£¡£¡×¢Òâ Ä¿Ç°ÓÉÓÚÃ»ÓĞ¶à½ø³Ì£¬¹Ê¶ÔÓÚb_countµÈĞÅºÅÁ¿Ê¹ÓÃ²¢²»¹æ·¶
+ç›®å‰æš‚ä¸è®¾ç½®å†…å­˜ä¸­blocks çš„å¤§å°
+ç£ç›˜è¿™éƒ¨åˆ†ä¸ºå¤–ç•Œæä¾›å‡ ä¸ªåŠŸèƒ½
+1. è·å–å·²ç»åœ¨ç£ç›˜ä¸Šå­˜åœ¨çš„æ•°æ®å— bread()
+2. åœ¨ç£ç›˜ä¸Šåˆ›å»ºä¸€ä¸ªæ–°çš„æ•°æ®å—  new_block()
+3. åœ¨ç£ç›˜ä¸Šåˆ é™¤å¹¶æ¸…ç©ºä¸€ä¸ªæ•°æ®å—  free_block()
+4. å¯¹äºå¤šè¿›ç¨‹è€Œè¨€ï¼Œéœ€è¦å®šä¹‰brelse è®©è¿›ç¨‹æ”¾å¼ƒå¯¹blockçš„ä½¿ç”¨æƒ
+ï¼ï¼ï¼æ³¨æ„ ç›®å‰ç”±äºæ²¡æœ‰å¤šè¿›ç¨‹ï¼Œæ•…å¯¹äºb_countç­‰ä¿¡å·é‡ä½¿ç”¨å¹¶ä¸è§„èŒƒ
 */
 map<int,buffer_head*> blocks;
 
-/*ÏòÄÚ´æÖĞÉêÇëÒ»¿é¿Õ¼ä´æ·Åblock*/
+/*å‘å†…å­˜ä¸­ç”³è¯·ä¸€å—ç©ºé—´å­˜æ”¾block*/
 static buffer_head* getblk(int block)
 {
 	buffer_head* bh;
 	bh = blocks[block];
-	if (bh) //Èç¹ûÄÚ´æÖĞÒÑ¾­´æÔÚ¸ÃÊı¾İ¿é£¬ÔòÊÍ·Å¸ÃÆäÄÚ´æ
+	if (bh) //å¦‚æœå†…å­˜ä¸­å·²ç»å­˜åœ¨è¯¥æ•°æ®å—ï¼Œåˆ™é‡Šæ”¾è¯¥å…¶å†…å­˜
 	{
 		if (bh->b_uptodate)
 		{
-			cerr << "³¢ÊÔÉêÇëÒ»¿éÒÑ¾­ÔÚÄÚ´æÖĞ´æÔÚ£¬ÇÒ×îĞÂµÄÊı¾İ¿é" << endl;
+			cerr << "å°è¯•ç”³è¯·ä¸€å—å·²ç»åœ¨å†…å­˜ä¸­å­˜åœ¨ï¼Œä¸”æœ€æ–°çš„æ•°æ®å—" << endl;
 			return NULL;
 		}
 		delete blocks[block]->b_data;
@@ -35,13 +35,13 @@ static buffer_head* getblk(int block)
 	bh->b_blocknr = block;
 	bh->b_count = 1;
 	bh->b_dirt = 0;
-	//¸Õ¸ÕÉêÇëµÄÄÚ´æ»¹Î´¶ÁÈëÊı¾İ¿é
+	//åˆšåˆšç”³è¯·çš„å†…å­˜è¿˜æœªè¯»å…¥æ•°æ®å—
 	bh->b_uptodate = 0;
 	
 	blocks[block] = bh;
 	return bh;
 }
-/*»ñÈ¡ÄÚ´æÖĞÒÑ¾­´æÔÚµÄblock*/
+/*è·å–å†…å­˜ä¸­å·²ç»å­˜åœ¨çš„block*/
 static buffer_head* get_hash_table(int block)
 {
 	auto bk = blocks.find(block);
@@ -54,10 +54,10 @@ static buffer_head* get_hash_table(int block)
 	}
 	return NULL;
 }
-//´ÅÅÌ¿éĞ´Èëº¯Êı
+//ç£ç›˜å—å†™å…¥å‡½æ•°
 static char* bwrite(int block, char *bh) {
 	ofstream disk;
-	/*ÑªÀá°¡£¬c++ÏëÒªĞŞ¸ÄÎÄ¼ş²¿·ÖµÄÖµ£¬±ØĞëÒÔ¶Á¼ÓĞ´Ä£Ê½´ò¿ª£¬µ¥´¿ÒÔĞ´Ä£Ê½´ò¿ª£¬»áÇå¿ÕÊı¾İ*/
+	/*è¡€æ³ªå•Šï¼Œc++æƒ³è¦ä¿®æ”¹æ–‡ä»¶éƒ¨åˆ†çš„å€¼ï¼Œå¿…é¡»ä»¥è¯»åŠ å†™æ¨¡å¼æ‰“å¼€ï¼Œå•çº¯ä»¥å†™æ¨¡å¼æ‰“å¼€ï¼Œä¼šæ¸…ç©ºæ•°æ®*/
 	disk.open("hdc-0.11.img", ios::binary | ios::out|ios::in);
 	disk.seekp((block + 1)*BLOCK_SIZE,ios::beg);
 	//cout << block << "  Write to the file" << endl;
@@ -83,19 +83,19 @@ void realse_all_blocks()
 }
 
 /*
-¸ù¾İblock±àºÅ»ñÈ¡ÒÑ¾­ÔÚ´ÅÅÌÉÏ´æÔÚµÄÊı¾İ¿é 
+æ ¹æ®blockç¼–å·è·å–å·²ç»åœ¨ç£ç›˜ä¸Šå­˜åœ¨çš„æ•°æ®å— 
 */
 buffer_head* bread(int block) {
 	buffer_head* bh;
-	//´Óblocks²éÕÒ¿´¸ÃblockÊÇ·ñÒÑ¾­¶ÁÈëÄÚ´æ£¬´æÔÚÔòÖ±½Ó·µ»Ø
+	//ä»blocksæŸ¥æ‰¾çœ‹è¯¥blockæ˜¯å¦å·²ç»è¯»å…¥å†…å­˜ï¼Œå­˜åœ¨åˆ™ç›´æ¥è¿”å›
 	if (bh = get_hash_table(block))
 	{
 		bh->b_count++;
 		return bh;
 	}
-	//ÏòblocksÉêÇëÄÚ´æÖĞblock
+	//å‘blocksç”³è¯·å†…å­˜ä¸­block
 	bh = getblk(block);
-	//´Ó´ÅÅÌÖĞ¶ÁÈ¡
+	//ä»ç£ç›˜ä¸­è¯»å–
 	ifstream disk;
 	disk.open("hdc-0.11.img", ios::binary);
 	disk.seekg((block+1)*BLOCK_SIZE);
@@ -108,7 +108,7 @@ buffer_head* bread(int block) {
 	return bh;
 }
 
-/*Çå¿ÕÖ¸¶¨Êı¾İÇø£¬ÆäÊµ²¢²»»á½«´ÅÅÌÉÏµÄÊı¾İÇå0£¬Ö»ÊÇ½«¶ÔÓ¦Êı¾İ¿éÎ»Í¼½øĞĞĞŞ¸ÄÎª0*/
+/*æ¸…ç©ºæŒ‡å®šæ•°æ®åŒºï¼Œå…¶å®å¹¶ä¸ä¼šå°†ç£ç›˜ä¸Šçš„æ•°æ®æ¸…0ï¼Œåªæ˜¯å°†å¯¹åº”æ•°æ®å—ä½å›¾è¿›è¡Œä¿®æ”¹ä¸º0*/
 void free_block(int dev, int block)
 {
 	struct super_block * sb;
@@ -117,7 +117,7 @@ void free_block(int dev, int block)
 		printf("trying to free block on nonexistent device");
 	if (block < sb->s_firstdatazone || block >= sb->s_nzones)
 		printf("trying to free block not in datazone");
-	/*Ê×ÏÈ²é¿´ÄÚ´æÖĞÊÇ·ñÒÑ¾­´æÔÚÒªÇå¿ÕµÄÊı¾İÇø£¬ÓĞÔò½«¸ÃÊı¾İÇø×÷·Ï*/
+	/*é¦–å…ˆæŸ¥çœ‹å†…å­˜ä¸­æ˜¯å¦å·²ç»å­˜åœ¨è¦æ¸…ç©ºçš„æ•°æ®åŒºï¼Œæœ‰åˆ™å°†è¯¥æ•°æ®åŒºä½œåºŸ*/
 	bh = get_hash_table(block);
 	if (bh) {
 		bh->b_count++;
@@ -127,21 +127,21 @@ void free_block(int dev, int block)
 			return;
 		}
 		bh->b_dirt = 0;
-		/*ĞŞ¸Äuptodata£¬±íÊ¾ÄÚ´æÖĞÊı¾İ²»ÊÇ×îĞÂµÄ*/
+		/*ä¿®æ”¹uptodataï¼Œè¡¨ç¤ºå†…å­˜ä¸­æ•°æ®ä¸æ˜¯æœ€æ–°çš„*/
 		bh->b_uptodate = 0;
 		brelse(bh);
 	}
-	/*ĞŞ¸ÄÊı¾İ¿éÎ»Í¼*/
+	/*ä¿®æ”¹æ•°æ®å—ä½å›¾*/
 	block -= sb->s_firstdatazone - 1;
 	if (!get_bit(block%BLOCK_BIT, sb->s_zmap[block / BLOCK_BIT]->b_data))
-	{	//Èç¹ûÒªĞŞ¸ÄµÄÎ»Í¼ÒÑ¾­Îª0,ËµÃ÷³öÏÖ³ÌĞòbug
+	{	//å¦‚æœè¦ä¿®æ”¹çš„ä½å›¾å·²ç»ä¸º0,è¯´æ˜å‡ºç°ç¨‹åºbug
 		printf("WARING block :%d already cleared\n", block + sb->s_firstdatazone - 1);
 	}
 	clear_bit(block%BLOCK_BIT, sb->s_zmap[block / BLOCK_BIT]->b_data);
 	sb->s_zmap[block / 8192]->b_dirt = 1;
 }
 
-/*´´½¨Ò»¸öĞÂµÄÊı¾İ¿é£¬²¢Ğ´»Ø´ÅÅÌµÄÊı¾İÇø*/
+/*åˆ›å»ºä¸€ä¸ªæ–°çš„æ•°æ®å—ï¼Œå¹¶å†™å›ç£ç›˜çš„æ•°æ®åŒº*/
 int new_block(int dev)
 {
 	struct buffer_head * bh;
@@ -158,7 +158,7 @@ int new_block(int dev)
 				break;
 	if (i >= 8 || !bh || j >= 8192)
 		return 0;
-	//ĞŞ¸ÄÂß¼­¿éÎ»Í¼
+	//ä¿®æ”¹é€»è¾‘å—ä½å›¾
 	if (get_bit(j, bh->b_data))
 	{
 		printf("new_block: bit already set\n");
@@ -168,11 +168,11 @@ int new_block(int dev)
 	bh->b_dirt = 1;
 
 	j += i * 8192 + sb->s_firstdatazone - 1;
-	//³¬¹ıÁË³¬¼¶¿éµÄ·¶Î§
+	//è¶…è¿‡äº†è¶…çº§å—çš„èŒƒå›´
 	if (j >= sb->s_nzones)
 		return 0;
 
-	//Ö®ºó¿ÉÒÔ¿¼ÂÇÔö¼ÓblocksµÄ×î´óÖµ£¬¼´ĞèÒªÉêÇë¿ÕÏĞblock
+	//ä¹‹åå¯ä»¥è€ƒè™‘å¢åŠ blocksçš„æœ€å¤§å€¼ï¼Œå³éœ€è¦ç”³è¯·ç©ºé—²block
 	/*
 	if (!(bh = getblk(dev, j)))
 		panic("new_block: cannot get block");
@@ -180,7 +180,7 @@ int new_block(int dev)
 		panic("new block: count is != 1");
 	clear_block(bh->b_data);
 	*/
-	//ÉêÇëÒ»¿éĞÂµÄblock¿Õ¼ä
+	//ç”³è¯·ä¸€å—æ–°çš„blockç©ºé—´
 	bh = getblk(j);
 	bh->b_count = 1;
 	bh->b_uptodate = 1;
@@ -189,9 +189,9 @@ int new_block(int dev)
 	return j;
 }
 
-/*¸øÓèÆäËû½ø³ÌÊ¹ÓÃ£¬Ã¿µ±Ò»¸ö½ø³ÌÍ¨¹ıbread»ñÈ¡Êı¾İ¿éÊ±£¬i_count++£¬
-µ±b_count=0Ê±£¬Èç¹û¸ÃÊı¾İ¿éÒÑ¾­±»ĞŞ¸Ä£¬ÔòĞ´»Ø´ÅÅÌ£¬¸Ã¿é½«¼ÓÈë¿ÕÏĞ¶ÓÁĞ
-b_count=0 ½ö´ú±íÄ¿Ç°¸ÃÊı¾İ¿éÃ»ÓĞ½ø³ÌÊ¹ÓÃ*/
+/*ç»™äºˆå…¶ä»–è¿›ç¨‹ä½¿ç”¨ï¼Œæ¯å½“ä¸€ä¸ªè¿›ç¨‹é€šè¿‡breadè·å–æ•°æ®å—æ—¶ï¼Œi_count++ï¼Œ
+å½“b_count=0æ—¶ï¼Œå¦‚æœè¯¥æ•°æ®å—å·²ç»è¢«ä¿®æ”¹ï¼Œåˆ™å†™å›ç£ç›˜ï¼Œè¯¥å—å°†åŠ å…¥ç©ºé—²é˜Ÿåˆ—
+b_count=0 ä»…ä»£è¡¨ç›®å‰è¯¥æ•°æ®å—æ²¡æœ‰è¿›ç¨‹ä½¿ç”¨*/
 int brelse(buffer_head* bh) {
 	if (!bh)return 1;
 	if (bh->b_count > 1)
@@ -201,12 +201,12 @@ int brelse(buffer_head* bh) {
 	}
 	if (bh->b_dirt)
 	{
-		//ÏÈ²»Ğ´»Ø,syncyÒ»´ÎĞÔĞ´»Ø
+		//å…ˆä¸å†™å›,syncyä¸€æ¬¡æ€§å†™å›
 		//bwrite(bh->b_blocknr, bh->b_data);
 		//bh->b_dirt = 0;
 	}
 	bh->b_count--;
-	//ÔİÇÒ²»¿¼ÂÇÄÚ´æµÄÊÍ·Å
+	//æš‚ä¸”ä¸è€ƒè™‘å†…å­˜çš„é‡Šæ”¾
 	return 1;
 }
 

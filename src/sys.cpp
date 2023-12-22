@@ -26,20 +26,20 @@ static string GetFileMode(long mode)
 {
 	float num = 1024.00; //byte
 	if (S_ISDIR(mode))
-		return "Ä¿Â¼ÎÄ¼ş";
+		return "ç›®å½•æ–‡ä»¶";
 	if (S_ISREG(mode))
-		return "ÆÕÍ¨ÎÄ¼ş";
-	return"Î´ÖªÎÄ¼şÀàĞÍ";
+		return "æ™®é€šæ–‡ä»¶";
+	return"æœªçŸ¥æ–‡ä»¶ç±»å‹";
 }
 
-/*ÎÄ¼ş·ÖÁ½ÖÖ£¬ÆÕÍ¨ÎÄ¼şºÍÄ¿Â¼ÎÄ¼ş
-¶ÔÓÚÄ¿Â¼ÎÄ¼ş£¬ÓÃ»§Ê¹ÓÃÊ±ÏëÒªµÄÊÇ
-Ê¹ÓÃÒ»¸öÄ¿Â¼Ö¸Õë£¬¸ÃÄ¿Â¼Ö¸Õë¿ÉÒÔµÃµ½Ã¿Ò»ÌõÄ¿Â¼µÄÃû×Ö
-¶ÔÓÚÆÕÍ¨ÎÄ¼ş£¬ÓÃ»§Ê¹ÓÃÊ±ÏëÒªµÄÊÇ
-Ê¹ÓÃÒ»¸öÎÄ¼şÖ¸Õë£¬¸ÃÎÄ¼şÖ¸Õë¿ÉÒÔµÃµ½ÎÄ¼şÖ¸¶¨µÄÄÚÈİ
-¿ÉÒÔµÃµ½ÎÄ¼şÃû£¬ÎÄ¼ş´óĞ¡µÈĞÅÏ¢
+/*æ–‡ä»¶åˆ†ä¸¤ç§ï¼Œæ™®é€šæ–‡ä»¶å’Œç›®å½•æ–‡ä»¶
+å¯¹äºç›®å½•æ–‡ä»¶ï¼Œç”¨æˆ·ä½¿ç”¨æ—¶æƒ³è¦çš„æ˜¯
+ä½¿ç”¨ä¸€ä¸ªç›®å½•æŒ‡é’ˆï¼Œè¯¥ç›®å½•æŒ‡é’ˆå¯ä»¥å¾—åˆ°æ¯ä¸€æ¡ç›®å½•çš„åå­—
+å¯¹äºæ™®é€šæ–‡ä»¶ï¼Œç”¨æˆ·ä½¿ç”¨æ—¶æƒ³è¦çš„æ˜¯
+ä½¿ç”¨ä¸€ä¸ªæ–‡ä»¶æŒ‡é’ˆï¼Œè¯¥æ–‡ä»¶æŒ‡é’ˆå¯ä»¥å¾—åˆ°æ–‡ä»¶æŒ‡å®šçš„å†…å®¹
+å¯ä»¥å¾—åˆ°æ–‡ä»¶åï¼Œæ–‡ä»¶å¤§å°ç­‰ä¿¡æ¯
 */
-/*ÎÄ¼ş²Ù×÷µÄÏµÍ³µ÷ÓÃ£¬°üÀ¨open£¬close£¬read£¬write£¬lseek*/
+/*æ–‡ä»¶æ“ä½œçš„ç³»ç»Ÿè°ƒç”¨ï¼ŒåŒ…æ‹¬openï¼Œcloseï¼Œreadï¼Œwriteï¼Œlseek*/
 int sys_open(string filename, int flag, int mode) {
 	struct m_inode * inode;
 	struct file * f;
@@ -91,7 +91,7 @@ int sys_read(unsigned int fd, char * buf, int count) {
 		return 0;
 	//verify_area(buf, count);
 	inode = file->f_inode;
-	/*Ä¿Ç°ÔÊĞí¶ÁÄ¿Â¼ºÍÆÕÍ¨ÎÄ¼ş*/
+	/*ç›®å‰å…è®¸è¯»ç›®å½•å’Œæ™®é€šæ–‡ä»¶*/
 	if (S_ISDIR(inode->i_mode) || S_ISREG(inode->i_mode)) {
 		if (count + file->f_pos > inode->i_size)
 			count = inode->i_size - file->f_pos;
@@ -112,13 +112,13 @@ int sys_write(unsigned int fd, char * buf, int count)
 	if (!count)
 		return 0;
 	inode = file->f_inode;
-	/*Ö»ÔÊĞíĞ´ÆÕÍ¨ÎÄ¼ş*/
+	/*åªå…è®¸å†™æ™®é€šæ–‡ä»¶*/
 	if (S_ISREG(inode->i_mode))
 		return file_write(inode, file, buf, count);
 	printf("(Write)inode->i_mode=%06o\n\r", inode->i_mode);
 	return -EINVAL;
 }
-/*ÒÆ¶¯ÎÄ¼şÖ¸Õë*/
+/*ç§»åŠ¨æ–‡ä»¶æŒ‡é’ˆ*/
 int sys_lseek(unsigned int fd, off_t offset, int origin)
 {
 	struct file * file;
@@ -155,7 +155,7 @@ int sys_get_work_dir(struct m_inode* inode, string & out)
 	out = "";
 	char name[20];
 	struct m_inode* fa;
-	inode->i_count++;//Ö®ºó»áiputÒ»´Î
+	inode->i_count++;//ä¹‹åä¼šiputä¸€æ¬¡
 
 	while (inode->i_num != fileSystem->root->i_num)
 	{
@@ -178,7 +178,7 @@ int sys_get_work_dir(struct m_inode* inode, string & out)
 	return 1;
 }
 
-//lsÃüÁî ÏÔÊ¾µ±Ç°Ä¿Â¼ÏÂËùÓĞÎÄ¼ş
+//lså‘½ä»¤ æ˜¾ç¤ºå½“å‰ç›®å½•ä¸‹æ‰€æœ‰æ–‡ä»¶
 int cmd_ls() 
 {
 	int entries;
@@ -198,21 +198,21 @@ int cmd_ls()
 	i = 0;
 	de = (struct dir_entry *) bh->b_data;
 	while (i < entries) {
-		/*Ò»¸öÄ¿Â¼¿é¶ÁÈ¡Íê±Ï,Ôò»»ÏÂÒ»¸öÄ¿Â¼Ñ°ÕÒ*/
+		/*ä¸€ä¸ªç›®å½•å—è¯»å–å®Œæ¯•,åˆ™æ¢ä¸‹ä¸€ä¸ªç›®å½•å¯»æ‰¾*/
 		if ((char *)de >= BLOCK_SIZE + bh->b_data) {
 			brelse(bh);
 			block = bmap(*dir, i / DIR_ENTRIES_PER_BLOCK);
 			bh = bread(block);
 			if (bh == NULL || block <= 0)
 			{
-				/*Èç¹ûÏÂÒ»¸öÄ¿Â¼Ïî¶ÁÈ¡Ê§°Ü£¬ÔòÌø¹ı¸ÃÄ¿Â¼*/
+				/*å¦‚æœä¸‹ä¸€ä¸ªç›®å½•é¡¹è¯»å–å¤±è´¥ï¼Œåˆ™è·³è¿‡è¯¥ç›®å½•*/
 				i += DIR_ENTRIES_PER_BLOCK;
 				continue;
 			}
 			else
 				de = (struct dir_entry *) bh->b_data;
 		}
-		/*de->inode =0 ´ú±í¸ÃÄ¿Â¼ÊÇ¿ÕµÄ*/
+		/*de->inode =0 ä»£è¡¨è¯¥ç›®å½•æ˜¯ç©ºçš„*/
 		if (strcmp(de->name,"..")&& strcmp(de->name, ".")&& de->inode!=0)
 		{
 			m_inode* inode = iget(0, de->inode);
@@ -232,13 +232,13 @@ int cmd_ls()
 	}
 	brelse(bh);
 	if (count <= 0){
-		pinfoc("¸ÃÄ¿Â¼Îª¿Õ");
+		pinfoc("è¯¥ç›®å½•ä¸ºç©º");
 	}
 	cout << endl;
 	return 0;
 }
 
-/*statÃüÁî£¬ÏÔÊ¾ÎÄ¼şÏêÏ¸ĞÅÏ¢*/
+/*statå‘½ä»¤ï¼Œæ˜¾ç¤ºæ–‡ä»¶è¯¦ç»†ä¿¡æ¯*/
 int cmd_stat(string path)
 {
 	const char * basename;
@@ -270,13 +270,13 @@ int cmd_stat(string path)
 	cout << "num: " << inode->i_num << endl;
 	cout << "firstzone: " << inode->i_zone[0] << endl;
 	cout << "size: " << GetFileSize(inode->i_size) << endl;
-	//cout << "×îºó·ÃÎÊÊ±¼ä: " << longtoTime(inode->i_atime) << endl;
-	cout << "×îºóĞŞ¸ÄÊ±¼ä: " << longtoTime(inode->i_mtime) << endl;
-	//cout << "i½Úµã×ÔÉí×îÖÕ±»ĞŞ¸ÄÊ±¼ä: " << longtoTime(inode->i_ctime) << endl;
+	//cout << "æœ€åè®¿é—®æ—¶é—´: " << longtoTime(inode->i_atime) << endl;
+	cout << "æœ€åä¿®æ”¹æ—¶é—´: " << longtoTime(inode->i_mtime) << endl;
+	//cout << "ièŠ‚ç‚¹è‡ªèº«æœ€ç»ˆè¢«ä¿®æ”¹æ—¶é—´: " << longtoTime(inode->i_ctime) << endl;
 	return 0;
 }
 
-/*cdÃüÁî£¬ÒÆ¶¯¹¤×÷Ä¿Â¼*/
+/*cdå‘½ä»¤ï¼Œç§»åŠ¨å·¥ä½œç›®å½•*/
 int cmd_cd(string path)
 {
 	struct m_inode *dir=NULL;
@@ -293,7 +293,7 @@ int cmd_cd(string path)
 	return 0;
 }
 
-/*pwdÃüÁî£¬Êä³öµ±Ç°Â·¾¶Ãû*/
+/*pwdå‘½ä»¤ï¼Œè¾“å‡ºå½“å‰è·¯å¾„å*/
 int cmd_pwd()
 {
 	struct m_inode *dir = NULL;
@@ -306,7 +306,7 @@ int cmd_pwd()
 	return -EPERM;
 }
 
-/*catÃüÁî£¬Êä³öÖ¸¶¨ÎÄ¼şµÄËùÓĞÄÚÈİ*/
+/*catå‘½ä»¤ï¼Œè¾“å‡ºæŒ‡å®šæ–‡ä»¶çš„æ‰€æœ‰å†…å®¹*/
 int cmd_cat(string path) {
 	int fd, size,i;
 	struct m_inode* inode;
@@ -330,15 +330,15 @@ int cmd_cat(string path) {
 	}
 	if (size == 0)
 	{
-		pinfoc("ÎÄ¼şÎª¿Õ");
+		pinfoc("æ–‡ä»¶ä¸ºç©º");
 	}
 	else if (S_ISREG(inode->i_mode))
 	{
-		pinfoc("ÎÄ¼ş´óĞ¡£º"+ GetFileSize(size));
+		pinfoc("æ–‡ä»¶å¤§å°ï¼š"+ GetFileSize(size));
 		printf("%s\n", buf);
-	}else//ÆäËûÎÄ¼şÀàĞÍÒÔ¶ş½øÖÆÁ÷Êä³ö
+	}else//å…¶ä»–æ–‡ä»¶ç±»å‹ä»¥äºŒè¿›åˆ¶æµè¾“å‡º
 	{
-		pinfoc("ÎÄ¼ş´óĞ¡£º" + GetFileSize(size));
+		pinfoc("æ–‡ä»¶å¤§å°ï¼š" + GetFileSize(size));
 		for(i=0;i<size;++i)
 		{
 			printf("%x", buf[i]);
@@ -351,7 +351,7 @@ int cmd_cat(string path) {
 	return 0;
 }
 
-/*viÖ¸Áî£¬¿ÉÒÔÔÚÎÄ¼şÄ©Î²ÔöÌíÄÚÈİ*/
+/*viæŒ‡ä»¤ï¼Œå¯ä»¥åœ¨æ–‡ä»¶æœ«å°¾å¢æ·»å†…å®¹*/
 int cmd_vi(string path)
 {
 	int fd, size, i;
@@ -362,7 +362,7 @@ int cmd_vi(string path)
 	if (fd < 0) {
 		return fd;
 	}
-	printfc(FG_YELLOW, "ÇëÊäÈëÄÚÈİ£º");
+	printfc(FG_YELLOW, "è¯·è¾“å…¥å†…å®¹ï¼š");
 	cin >> in;
 	getchar();
 	i = sys_write(fd, (char*)in.c_str(), in.length());
@@ -370,12 +370,12 @@ int cmd_vi(string path)
 			sys_close(fd);
 			return i;
 		}
-	psucc("\nÌí¼Ó³É¹¦");
+	psucc("\næ·»åŠ æˆåŠŸ");
 	sys_close(fd);
 	return 0;
 }
 
-/*mkdirÃüÁî£¬´´½¨Ò»¸öĞÂµÄÎÄ¼ş¼Ğ£¨Ä¿Â¼£©*/
+/*mkdirå‘½ä»¤ï¼Œåˆ›å»ºä¸€ä¸ªæ–°çš„æ–‡ä»¶å¤¹ï¼ˆç›®å½•ï¼‰*/
 int cmd_mkdir(const char * pathname, int mode)
 {
 	const char * basename;
@@ -383,14 +383,14 @@ int cmd_mkdir(const char * pathname, int mode)
 	struct m_inode * dir, *inode;
 	struct buffer_head * bh, *dir_block;
 	struct dir_entry * de;
-	//dirÊÇÕÒµ½µÄ¸¸Ä¿Â¼
+	//diræ˜¯æ‰¾åˆ°çš„çˆ¶ç›®å½•
 	if (!(dir = dir_namei(pathname, &namelen, &basename)))
 		return -ENOENT;
 	if (!namelen) {
 		iput(dir);
 		return -ENOENT;
 	}
-	//ÅĞ¶ÏÒªÔö¼ÓµÄÄ¿Â¼ÊÇ·ñÒÑ¾­´æÔÚ
+	//åˆ¤æ–­è¦å¢åŠ çš„ç›®å½•æ˜¯å¦å·²ç»å­˜åœ¨
 	bh = find_entry(&dir, basename, namelen, &de);
 	if (bh) {
 		brelse(bh);
@@ -398,7 +398,7 @@ int cmd_mkdir(const char * pathname, int mode)
 		return -EEXIST;
 	}
 
-	//¿ªÊ¼´´½¨£¬Ê×ÏÈ´´½¨×ÓÄ¿Â¼µÄinode½Úµã
+	//å¼€å§‹åˆ›å»ºï¼Œé¦–å…ˆåˆ›å»ºå­ç›®å½•çš„inodeèŠ‚ç‚¹
 	inode = new_inode(dir->i_dev);
 
 	if (!inode) {
@@ -409,7 +409,7 @@ int cmd_mkdir(const char * pathname, int mode)
 	inode->i_dirt = 1;
 	inode->i_mtime = inode->i_atime = CurrentTime();
 
-	//Îª×ÓÄ¿Â¼´´½¨µÚÒ»¸öÊı¾İ¿é£¬Ëü½«°üº¬Á½¸ö×ÓÄ¿Â¼Ïî . ºÍ ..
+	//ä¸ºå­ç›®å½•åˆ›å»ºç¬¬ä¸€ä¸ªæ•°æ®å—ï¼Œå®ƒå°†åŒ…å«ä¸¤ä¸ªå­ç›®å½•é¡¹ . å’Œ ..
 	if (!(inode->i_zone[0] = new_block(inode->i_dev))) {
 		iput(dir);
 		inode->i_nlinks--;
@@ -425,23 +425,23 @@ int cmd_mkdir(const char * pathname, int mode)
 		return -1;
 	}
 	de = (struct dir_entry *) dir_block->b_data;
-	/*¼ÓÈë. ºÍ .. Á½¸ö×ÓÄ¿Â¼*/
+	/*åŠ å…¥. å’Œ .. ä¸¤ä¸ªå­ç›®å½•*/
 	de->inode = inode->i_num;
 	strcpy(de->name, ".");
 	de++;
 	de->inode = dir->i_num;
 	strcpy(de->name, "..");
 
-	/*ÓÉÓÚÒ»¸öÄ¿Â¼½ÚµãĞÂ½¨Ê±£¬ÓĞ¸¸Ä¿Â¼Ö¸ÏòËü£¬¼ÓÉÏ . Ä¿Â¼ÏîÖ¸Ïò×Ô¼º£¬¹Êi_nlinks=2*/
+	/*ç”±äºä¸€ä¸ªç›®å½•èŠ‚ç‚¹æ–°å»ºæ—¶ï¼Œæœ‰çˆ¶ç›®å½•æŒ‡å‘å®ƒï¼ŒåŠ ä¸Š . ç›®å½•é¡¹æŒ‡å‘è‡ªå·±ï¼Œæ•…i_nlinks=2*/
 	inode->i_nlinks = 2;
 	dir_block->b_dirt = 1;
 	brelse(dir_block);
 	inode->i_mode = mode;
 	inode->i_dirt = 1;
-	//È»ºó½«×ÓÄ¿Â¼²åÈëµ½¸¸Ä¿Â¼ÖĞ
+	//ç„¶åå°†å­ç›®å½•æ’å…¥åˆ°çˆ¶ç›®å½•ä¸­
 	bh = add_entry(dir, basename, namelen, &de);
 
-	if (!bh) { //Ôö¼Ó×ÓÄ¿Â¼Ê§°Ü£¬ÊÍ·ÅËùÓĞ×ÊÔ´
+	if (!bh) { //å¢åŠ å­ç›®å½•å¤±è´¥ï¼Œé‡Šæ”¾æ‰€æœ‰èµ„æº
 		iput(dir);
 		free_block(inode->i_dev, inode->i_zone[0]);
 		inode->i_nlinks = 0;
@@ -449,7 +449,7 @@ int cmd_mkdir(const char * pathname, int mode)
 		return -ENOSPC;
 	}
 	//cout << "add_entry successful" << endl;
-	//ÖÕÓÚ´´½¨³É¹¦£¬Éè¶¨³õÊ¼Öµ
+	//ç»ˆäºåˆ›å»ºæˆåŠŸï¼Œè®¾å®šåˆå§‹å€¼
 	de->inode = inode->i_num;
 	bh->b_dirt = 1;
 	dir->i_nlinks++;
@@ -457,11 +457,11 @@ int cmd_mkdir(const char * pathname, int mode)
 	iput(dir);
 	iput(inode);
 	brelse(bh);
-	//psucc("ÎÄ¼ş¼Ğ³É¹¦´´½¨");
+	//psucc("æ–‡ä»¶å¤¹æˆåŠŸåˆ›å»º");
 	return 0;
 }
 
-/*touchÃüÁî,´´½¨Ò»¸öÆÕÍ¨µÄÎÄ¼ş½Úµã*/
+/*touchå‘½ä»¤,åˆ›å»ºä¸€ä¸ªæ™®é€šçš„æ–‡ä»¶èŠ‚ç‚¹*/
 int cmd_touch(const char * filename, int mode)
 {
 	const char * basename;
@@ -503,11 +503,11 @@ int cmd_touch(const char * filename, int mode)
 	iput(dir);
 	iput(inode);
 	brelse(bh);
-	psucc("ÎÄ¼ş´´½¨³É¹¦");
+	psucc("æ–‡ä»¶åˆ›å»ºæˆåŠŸ");
 	return 0;
 }
 
-/*rmdirÃüÁî£¬É¾³ıÒ»¸ö¿ÕµÄÎÄ¼ş¼Ğ£¨Ä¿Â¼£©*/
+/*rmdirå‘½ä»¤ï¼Œåˆ é™¤ä¸€ä¸ªç©ºçš„æ–‡ä»¶å¤¹ï¼ˆç›®å½•ï¼‰*/
 int cmd_rmdir(const char * name)
 {
 	const char * basename;
@@ -532,7 +532,7 @@ int cmd_rmdir(const char * name)
 		brelse(bh);
 		return -EPERM;
 	}
-	/*Èç¹û¸ÃÎÄ¼şÕıÓĞÆäËû½ø³ÌÕıÔÚÊ¹ÓÃ*/
+	/*å¦‚æœè¯¥æ–‡ä»¶æ­£æœ‰å…¶ä»–è¿›ç¨‹æ­£åœ¨ä½¿ç”¨*/
 	if (inode->i_count > 1) {
 		iput(dir);
 		iput(inode);
@@ -546,7 +546,7 @@ int cmd_rmdir(const char * name)
 		brelse(bh);
 		return -EPERM;
 	}
-	/*É¾³ıµÄ²»ÊÇÒ»¸öÄ¿Â¼£¬¶øÊÇÆäËûÀàĞÍÎÄ¼ş*/
+	/*åˆ é™¤çš„ä¸æ˜¯ä¸€ä¸ªç›®å½•ï¼Œè€Œæ˜¯å…¶ä»–ç±»å‹æ–‡ä»¶*/
 	if (!S_ISDIR(inode->i_mode)) {
 		iput(inode);
 		iput(dir);
@@ -561,24 +561,24 @@ int cmd_rmdir(const char * name)
 	}
 	if (inode->i_nlinks != 2)
 		printf("empty directory has nlink!=2 (%d)\n", inode->i_nlinks);
-	/*É¾³ıÄ¿Â¼Ë÷Òı*/
+	/*åˆ é™¤ç›®å½•ç´¢å¼•*/
 	de->inode = 0;
 	bh->b_dirt = 1;
 	brelse(bh);
-	/*É¾³ıÄ¿Â¼*/
+	/*åˆ é™¤ç›®å½•*/
 	inode->i_nlinks = 0;
 	inode->i_dirt = 1;
-	/*ĞŞ¸Ä¸¸Ä¿Â¼ĞÅÏ¢£¬ÓÉÓÚ×ÓÄ¿Â¼µÄ..Ïî±»É¾³ı£¬ËùÒÔ¸¸Ä¿Â¼µÄi_nliks--*/
+	/*ä¿®æ”¹çˆ¶ç›®å½•ä¿¡æ¯ï¼Œç”±äºå­ç›®å½•çš„..é¡¹è¢«åˆ é™¤ï¼Œæ‰€ä»¥çˆ¶ç›®å½•çš„i_nliks--*/
 	dir->i_nlinks--;
 	dir->i_ctime = dir->i_mtime = CurrentTime();
 	dir->i_dirt = 1;
 	iput(dir);
 	iput(inode);
-	psucc("ÎÄ¼ş¼ĞÉ¾³ı³É¹¦");
+	psucc("æ–‡ä»¶å¤¹åˆ é™¤æˆåŠŸ");
 	return 0;
 }
 
-/*rmÃüÁî£¬É¾³ı²Ù×÷£¬Ç¿ÖÆÉ¾³ıÆÕÍ¨ÎÄ¼ş*/
+/*rmå‘½ä»¤ï¼Œåˆ é™¤æ“ä½œï¼Œå¼ºåˆ¶åˆ é™¤æ™®é€šæ–‡ä»¶*/
 int cmd_rm(const char * name)
 {
 	const char * basename;
@@ -609,9 +609,9 @@ int cmd_rm(const char * name)
 		brelse(bh);
 		return -EISDIR;
 	}
-	/*Èç¹ûÎÄ¼şµÄÒıÓÃÊıÒÑ¾­Îª0£¬ËµÃ÷³öÏÖ³ÌĞòbug£¬²¢ĞŞÕıÎÄ¼şi_nlinks Îª1*/
+	/*å¦‚æœæ–‡ä»¶çš„å¼•ç”¨æ•°å·²ç»ä¸º0ï¼Œè¯´æ˜å‡ºç°ç¨‹åºbugï¼Œå¹¶ä¿®æ­£æ–‡ä»¶i_nlinks ä¸º1*/
 	if (!inode->i_nlinks) {
-		printf("£¡£¡£¡BUG Deleting nonexistent file (%04x:%d), %d\n",
+		printf("ï¼ï¼ï¼BUG Deleting nonexistent file (%04x:%d), %d\n",
 			inode->i_dev, inode->i_num, inode->i_nlinks);
 		inode->i_nlinks = 1;
 	}
@@ -623,10 +623,10 @@ int cmd_rm(const char * name)
 	inode->i_ctime = CurrentTime();
 	iput(inode);
 	iput(dir);
-	psucc("ÎÄ¼şÉ¾³ı³É¹¦");
+	psucc("æ–‡ä»¶åˆ é™¤æˆåŠŸ");
 	return 0;
 }
-/*syncÃüÁî£¬±£³ÖÄ¿Ç°µÄËùÓĞĞŞ¸ÄĞÅÏ¢*/
+/*syncå‘½ä»¤ï¼Œä¿æŒç›®å‰çš„æ‰€æœ‰ä¿®æ”¹ä¿¡æ¯*/
 int cmd_sync()
 {
 	file* f;
@@ -640,51 +640,51 @@ int cmd_sync()
 	}
 	realse_inode_table();
 	realse_all_blocks();
-	psucc("±£´æ³É¹¦");
+	psucc("ä¿å­˜æˆåŠŸ");
 	return 0;
 }
-/*exitÃüÁî£¬ÍË³öÎÄ¼şÏµÍ³£¬½«ËùÓĞĞÅÏ¢Ğ´»Ø´ÅÅÌ*/
+/*exitå‘½ä»¤ï¼Œé€€å‡ºæ–‡ä»¶ç³»ç»Ÿï¼Œå°†æ‰€æœ‰ä¿¡æ¯å†™å›ç£ç›˜*/
 int cmd_exit()
 {
 	iput(fileSystem->current);
 	iput(fileSystem->root);
 	cmd_sync();
-	printfc(FG_YELLOW, string("ÏµÍ³Ê±¼äÎª: ") + longtoTime(CurrentTime()));
+	printfc(FG_YELLOW, string("ç³»ç»Ÿæ—¶é—´ä¸º: ") + longtoTime(CurrentTime()));
 	return 0;
 }
 
 void myhint(int errorCode) {
 	if (errorCode == 0){
-		//cout << "²Ù×÷³É¹¦" << endl;
+		//cout << "æ“ä½œæˆåŠŸ" << endl;
 	}
 	else if(errorCode== -ENOENT){
-		perrorc("Â·¾¶²»ÕıÈ·£¬ÕÒ²»µ½Ö¸¶¨µÄÂ·¾¶");
+		perrorc("è·¯å¾„ä¸æ­£ç¡®ï¼Œæ‰¾ä¸åˆ°æŒ‡å®šçš„è·¯å¾„");
 	}
 	else if (errorCode == -ENOTDIR) {
-		perrorc( "Â·¾¶Ö¸ÏòµÄ²»ÊÇÄ¿Â¼ÎÄ¼ş" );
+		perrorc( "è·¯å¾„æŒ‡å‘çš„ä¸æ˜¯ç›®å½•æ–‡ä»¶" );
 	}
 	else if (errorCode == -ENOTEMPTY) {
-		perrorc("ÎÄ¼ş¼Ğ·Ç¿Õ");
+		perrorc("æ–‡ä»¶å¤¹éç©º");
 	}
 	else if (errorCode == -EPERM) {
-		perrorc("ÏµÍ³ÄÚ²¿ÎÊÌâ");
+		perrorc("ç³»ç»Ÿå†…éƒ¨é—®é¢˜");
 	}
 	else if (errorCode == -EEXIST) {
-		perrorc("ÎÄ¼şÒÑ¾­´æÔÚ") ;
+		perrorc("æ–‡ä»¶å·²ç»å­˜åœ¨") ;
 	}
 	else if (errorCode == -EACCES) {
-		perrorc("È¨ÏŞ²»×ã"); 
+		perrorc("æƒé™ä¸è¶³"); 
 	}
 	else if (errorCode == -EINVAL) {
-		perrorc("²»ÕıÈ·µÄ²ÎÊı");
+		perrorc("ä¸æ­£ç¡®çš„å‚æ•°");
 	}
 	else if (errorCode == -ENOSPC) {
-		perrorc("ÎŞ·¨ÉêÇëµ½×ÊÔ´£¬¿Õ¼ä²»×ã");
+		perrorc("æ— æ³•ç”³è¯·åˆ°èµ„æºï¼Œç©ºé—´ä¸è¶³");
 	}
 	else if (errorCode == -EISDIR) {
-		perrorc("Â·¾¶Ö¸ÏòÎªÄ¿Â¼ÎÄ¼ş");
+		perrorc("è·¯å¾„æŒ‡å‘ä¸ºç›®å½•æ–‡ä»¶");
 	}
 	else {
-		perrorc("Î´Öª´íÎó");
+		perrorc("æœªçŸ¥é”™è¯¯");
 	}
 }

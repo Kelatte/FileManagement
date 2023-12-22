@@ -14,13 +14,13 @@ int main()
 	//let's go!!!
 	init();
 	cmd();
-	system("pause");
+	// system("pause");
 }
 void init()
 {
 	init_inode_table();
 	mount_root();
-	printfc(FG_YELLOW,string("ϵͳʱ��Ϊ: ")+longtoTime(CurrentTime()));
+	printfc(FG_YELLOW,string("系统时间为: ")+longtoTime(CurrentTime()));
 }
 
 void fresh_cmd() {

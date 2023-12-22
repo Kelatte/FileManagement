@@ -2,7 +2,7 @@
 #include"fs.h"
 #include <ctime>
 
-/*ÔÚ¸ø³öµÄÄ¿Â¼ÄÚ¸ù¾ÝÎÄ¼þÃû²éÑ¯¾ßÌåµÄÄ³Ò»Ïî£¬·µ»Ø²éÑ¯µ½µÄinode µÄÊý¾Ý¿é */
+/*åœ¨ç»™å‡ºçš„ç›®å½•å†…æ ¹æ®æ–‡ä»¶åæŸ¥è¯¢å…·ä½“çš„æŸä¸€é¡¹ï¼Œè¿”å›žæŸ¥è¯¢åˆ°çš„inode çš„æ•°æ®å— */
 struct buffer_head * find_entry(struct m_inode ** dir,
 	const char * name, int namelen, struct dir_entry ** res_dir)
 {
@@ -38,14 +38,14 @@ struct buffer_head * find_entry(struct m_inode ** dir,
 	i = 0;
 	de = (struct dir_entry *) bh->b_data;
 	while (i < entries) {
-		/*Ò»¸öÄ¿Â¼¿é¶ÁÈ¡Íê±Ï£¬Î´ÕÒµ½Ä¿±ê£¬Ôò»»ÏÂÒ»¸öÄ¿Â¼Ñ°ÕÒ*/
+		/*ä¸€ä¸ªç›®å½•å—è¯»å–å®Œæ¯•ï¼Œæœªæ‰¾åˆ°ç›®æ ‡ï¼Œåˆ™æ¢ä¸‹ä¸€ä¸ªç›®å½•å¯»æ‰¾*/
 		if ((char *)de >= BLOCK_SIZE + bh->b_data) {
 			brelse(bh);
 			block = bmap(*dir, i / DIR_ENTRIES_PER_BLOCK);
 			bh = bread(block);
 			if (bh == NULL || block <= 0)
 			{
-				/*Èç¹ûÏÂÒ»¸öÄ¿Â¼Ïî¶ÁÈ¡Ê§°Ü£¬ÔòÌø¹ý¸ÃÄ¿Â¼*/
+				/*å¦‚æžœä¸‹ä¸€ä¸ªç›®å½•é¡¹è¯»å–å¤±è´¥ï¼Œåˆ™è·³è¿‡è¯¥ç›®å½•*/
 				i += DIR_ENTRIES_PER_BLOCK;
 				continue;
 			}
@@ -63,9 +63,9 @@ struct buffer_head * find_entry(struct m_inode ** dir,
 	return NULL;
 }
 
-/*ÔÚ¸ø³öµÄdirÖÐÔö¼ÓÒ»¸öÄ¿Â¼Ïî£¬Ðè¸ø³öÃû×ÖºÍ³¤¶È
-·µ»Ø°üº¬ÁË×ÓÄ¿Â¼µÄÊý¾Ý¿é
-res_dir ·µ»Ø´´½¨µÄ×ÓÄ¿Â¼Ïî£¬×¢Òâ£¬add_entryÖ»Éè¶¨ÁËÐÂ´´½¨Ä¿Â¼µÄÃû×Ö£¬Î´ÉèÖÃi½Úµã±àºÅ*/
+/*åœ¨ç»™å‡ºçš„dirä¸­å¢žåŠ ä¸€ä¸ªç›®å½•é¡¹ï¼Œéœ€ç»™å‡ºåå­—å’Œé•¿åº¦
+è¿”å›žåŒ…å«äº†å­ç›®å½•çš„æ•°æ®å—
+res_dir è¿”å›žåˆ›å»ºçš„å­ç›®å½•é¡¹ï¼Œæ³¨æ„ï¼Œadd_entryåªè®¾å®šäº†æ–°åˆ›å»ºç›®å½•çš„åå­—ï¼Œæœªè®¾ç½®ièŠ‚ç‚¹ç¼–å·*/
 struct buffer_head * add_entry(struct m_inode * dir,
 	const char * name, int namelen, struct dir_entry ** res_dir)
 {
@@ -91,7 +91,7 @@ struct buffer_head * add_entry(struct m_inode * dir,
 	de = (struct dir_entry *) bh->b_data;
 	while (1) {
 
-		/*±éÀúÍêÁËÒ»¸öÊý¾Ý¿é*/
+		/*éåŽ†å®Œäº†ä¸€ä¸ªæ•°æ®å—*/
 		if ((char *)de >= BLOCK_SIZE + bh->b_data)
 		{
 			brelse(bh);
@@ -106,14 +106,14 @@ struct buffer_head * add_entry(struct m_inode * dir,
 			de = (struct dir_entry *) bh->b_data;
 		}
 
-		/*±éÀúÁËËùÓÐ×ÓÄ¿Â¼£¬Î´ÕÒµ½¿ÕÏÐÏî£¬ÔòÔÚ×îºóÔö¼ÓÒ»Ïî*/
+		/*éåŽ†äº†æ‰€æœ‰å­ç›®å½•ï¼Œæœªæ‰¾åˆ°ç©ºé—²é¡¹ï¼Œåˆ™åœ¨æœ€åŽå¢žåŠ ä¸€é¡¹*/
 		if (i * sizeof(struct dir_entry) >= dir->i_size) {
 			de->inode = 0;
 			dir->i_size = (i + 1) * sizeof(struct dir_entry);
 			dir->i_dirt = 1;
 			dir->i_ctime = CurrentTime();
 		}
-		/*ÕÒµ½Ò»¸ö¿ÕÏÐµÄÄ¿Â¼Ïî*/
+		/*æ‰¾åˆ°ä¸€ä¸ªç©ºé—²çš„ç›®å½•é¡¹*/
 		if (!de->inode) {
 			dir->i_mtime = CurrentTime();
 			strncpy(de->name, name, NAME_LEN);
@@ -131,11 +131,11 @@ struct buffer_head * add_entry(struct m_inode * dir,
 	return NULL;
 }
 
-/*¸ø³öÒ»¸öÂ·¾¶£¬·µ»ØÂ·¾¶Ö¸ÏòµÄinode½Úµã
-Ä¿Â¼ÎÄ¼þºÍÆÕÍ¨ÎÄ¼þÎÄ¼þ½Úµã½á¹¹ÏàÍ¬ÇÒ¶¼´æ´¢ÔÚÊý¾ÝÇø£¬Ö»ÊÇ´æ´¢µÄÊý¾Ý²»Í¬°ÕÁË
-¶ÔÓÚÂ·¾¶ /user/linux ·µ»ØÖ¸ÏòlinuxµÄinode½Úµã
-		/user/linux/ Í¬Ñù·µ»ØÖ¸ÏòlinuxµÄinode½Úµã
-		/user/linux/a.out ·µ»ØÖ¸Ïòa.outµÄinode½Úµã
+/*ç»™å‡ºä¸€ä¸ªè·¯å¾„ï¼Œè¿”å›žè·¯å¾„æŒ‡å‘çš„inodeèŠ‚ç‚¹
+ç›®å½•æ–‡ä»¶å’Œæ™®é€šæ–‡ä»¶æ–‡ä»¶èŠ‚ç‚¹ç»“æž„ç›¸åŒä¸”éƒ½å­˜å‚¨åœ¨æ•°æ®åŒºï¼Œåªæ˜¯å­˜å‚¨çš„æ•°æ®ä¸åŒç½¢äº†
+å¯¹äºŽè·¯å¾„ /user/linux è¿”å›žæŒ‡å‘linuxçš„inodeèŠ‚ç‚¹
+		/user/linux/ åŒæ ·è¿”å›žæŒ‡å‘linuxçš„inodeèŠ‚ç‚¹
+		/user/linux/a.out è¿”å›žæŒ‡å‘a.outçš„inodeèŠ‚ç‚¹
 */
 struct m_inode * get_inode(const char * pathname)
 {
@@ -176,11 +176,11 @@ struct m_inode * get_inode(const char * pathname)
 	}
 }
 /*
-¸ø³öÒ»¸öÂ·¾¶£¬·µ»ØÂ·¾¶Ö¸ÏòµÄÉÏÃæÒ»²ãÄ¿Â¼½Úµã
-----ÊÊÓÃÓÚ ×îºóÒ»²ãÊÇÒ»¸öÆÕÍ¨ÎÄ¼þµÄÂ·¾¶
-¶ÔÓÚÂ·¾¶ /user/linux ·µ»ØÖ¸ÏòuserµÄinode½Úµã
-		/user/linux/ ·µ»ØÖ¸ÏòlinuxµÄinode½Úµã£¨Èç¹ûlinux²»ÊÇÄ¿Â¼ÎÄ¼þ£¬Ôò·µ»ØNULL£©
-		/user/linux/a.out ·µ»ØÖ¸ÏòlinuxµÄinode½Úµã
+ç»™å‡ºä¸€ä¸ªè·¯å¾„ï¼Œè¿”å›žè·¯å¾„æŒ‡å‘çš„ä¸Šé¢ä¸€å±‚ç›®å½•èŠ‚ç‚¹
+----é€‚ç”¨äºŽ æœ€åŽä¸€å±‚æ˜¯ä¸€ä¸ªæ™®é€šæ–‡ä»¶çš„è·¯å¾„
+å¯¹äºŽè·¯å¾„ /user/linux è¿”å›žæŒ‡å‘userçš„inodeèŠ‚ç‚¹
+		/user/linux/ è¿”å›žæŒ‡å‘linuxçš„inodeèŠ‚ç‚¹ï¼ˆå¦‚æžœlinuxä¸æ˜¯ç›®å½•æ–‡ä»¶ï¼Œåˆ™è¿”å›žNULLï¼‰
+		/user/linux/a.out è¿”å›žæŒ‡å‘linuxçš„inodeèŠ‚ç‚¹
 */
 
 struct m_inode * dir_namei(const char * pathname,int * namelen, const char ** name)
@@ -202,7 +202,7 @@ struct m_inode * dir_namei(const char * pathname,int * namelen, const char ** na
 	*name = basename;
 	// char* pathdir='\0';
 	int len = strlen(_pathname) - *namelen;
-	/*Èç¹û¸¸Ä¿Â¼×Ö·û³¤¶ÈÎª0£¬¼´·µ»Øµ±Ç°¹¤×÷Ä¿Â¼£¬·ñÔò½øÐÐ²éÑ¯*/
+	/*å¦‚æžœçˆ¶ç›®å½•å­—ç¬¦é•¿åº¦ä¸º0ï¼Œå³è¿”å›žå½“å‰å·¥ä½œç›®å½•ï¼Œå¦åˆ™è¿›è¡ŒæŸ¥è¯¢*/
 	if (len == 0) {
 		fileSystem->current->i_count++;
 		return  fileSystem->current;
@@ -214,7 +214,7 @@ struct m_inode * dir_namei(const char * pathname,int * namelen, const char ** na
 	return dir;
 }
 
-/*¸ø³öÒ»¸öÄ¿Â¼½Úµã£¬ÅÐ¶Ï¸ÃÄ¿Â¼ÊÇ·ñÎª¿Õ*/
+/*ç»™å‡ºä¸€ä¸ªç›®å½•èŠ‚ç‚¹ï¼Œåˆ¤æ–­è¯¥ç›®å½•æ˜¯å¦ä¸ºç©º*/
 int empty_dir(struct m_inode * inode)
 {
 	int nr, block;
@@ -248,7 +248,7 @@ int empty_dir(struct m_inode * inode)
 				return 0;
 			de = (struct dir_entry *) bh->b_data;
 		}
-		/*ÕÒµ½Ò»¸ö×Ó½Úµã¼´·µ»Ø*/
+		/*æ‰¾åˆ°ä¸€ä¸ªå­èŠ‚ç‚¹å³è¿”å›ž*/
 		if (de->inode) {
 			brelse(bh);
 			return 0;
@@ -260,7 +260,7 @@ int empty_dir(struct m_inode * inode)
 	return 1;
 }
 
-/*¸ø³öinode ·µ»Ø¸ÃinodeµÄÎÄ¼þÃû*/
+/*ç»™å‡ºinode è¿”å›žè¯¥inodeçš„æ–‡ä»¶å*/
 int get_name(struct m_inode * inode, char *buf,int size)
 {
 	int entries;
@@ -272,11 +272,11 @@ int get_name(struct m_inode * inode, char *buf,int size)
 		buf[0]='/';
 		return 1;
 	}
-	/*»ñÈ¡¸¸½Úµã*/
+	/*èŽ·å–çˆ¶èŠ‚ç‚¹*/
 
 	struct m_inode * dir = get_father(inode);
 
-	/*´Ó¸¸½Úµã²éÑ¯*/
+	/*ä»Žçˆ¶èŠ‚ç‚¹æŸ¥è¯¢*/
 	entries = dir->i_size / (sizeof(struct dir_entry));
 	block = dir->i_zone[0];
 	if (block <= 0)return NULL;
@@ -284,14 +284,14 @@ int get_name(struct m_inode * inode, char *buf,int size)
 	i = 0;
 	de = (struct dir_entry *) bh->b_data;
 	while (i < entries) {
-		/*Ò»¸öÄ¿Â¼¿é¶ÁÈ¡Íê±Ï£¬Î´ÕÒµ½Ä¿±ê£¬Ôò»»ÏÂÒ»¸öÄ¿Â¼Ñ°ÕÒ*/
+		/*ä¸€ä¸ªç›®å½•å—è¯»å–å®Œæ¯•ï¼Œæœªæ‰¾åˆ°ç›®æ ‡ï¼Œåˆ™æ¢ä¸‹ä¸€ä¸ªç›®å½•å¯»æ‰¾*/
 		if ((char *)de >= BLOCK_SIZE + bh->b_data) {
 			brelse(bh);
 			block = bmap(dir, i / DIR_ENTRIES_PER_BLOCK);
 			bh = bread(block);
 			if (bh == NULL || block <= 0)
 			{
-				/*Èç¹ûÏÂÒ»¸öÄ¿Â¼Ïî¶ÁÈ¡Ê§°Ü£¬ÔòÌø¹ý¸ÃÄ¿Â¼*/
+				/*å¦‚æžœä¸‹ä¸€ä¸ªç›®å½•é¡¹è¯»å–å¤±è´¥ï¼Œåˆ™è·³è¿‡è¯¥ç›®å½•*/
 				i += DIR_ENTRIES_PER_BLOCK;
 				continue;
 			}
@@ -310,7 +310,7 @@ int get_name(struct m_inode * inode, char *buf,int size)
 	brelse(bh);
 	return NULL;
 }
-/*¸ø³öÒ»¸öinode £¬·µ»Ø¸ÃinodeµÄ¸¸½Úµã*/
+/*ç»™å‡ºä¸€ä¸ªinode ï¼Œè¿”å›žè¯¥inodeçš„çˆ¶èŠ‚ç‚¹*/
 struct m_inode *get_father(struct m_inode * inode)
 {
 	int block = inode->i_zone[0];
