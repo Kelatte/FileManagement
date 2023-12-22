@@ -16,6 +16,10 @@ $(target): $(OBJS)
 %.o: %.cpp
 	$(CC) -c $< -o $@ $(CXXFLAGS) $(HEADERS)
 
+.PHONY: format
+format:
+	clang-format -style=google -i $(SRCS)
+
 .PHONY: clean
 clean:
 	rm -f $(OBJS) $(target)    
