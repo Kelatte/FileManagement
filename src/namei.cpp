@@ -12,7 +12,8 @@ struct buffer_head * find_entry(struct m_inode ** dir,
 	struct dir_entry * de;
 	struct super_block * sb;
 
-	entries = (*dir)->i_size / (sizeof(struct dir_entry));
+	// dir只能在直接的块（非索引）中存文件吗？能否支持更大的文件个数
+	entries = (*dir)->i_size / (sizeof(struct dir_entry)); // 目录下的文件总数？
 	*res_dir = NULL;
 	if (!namelen) 
 		return NULL;
@@ -21,7 +22,7 @@ struct buffer_head * find_entry(struct m_inode ** dir,
 		/* '..' in a pseudo-root results in a faked '.' (just change namelen) */
 		if ((*dir) == fileSystem->root)
 			namelen = 1;
-		else if ((*dir)->i_num == ROOT_INO) {
+		else if ((*dir)->i_num == ROOT_INO) { // mount？本程序没用到
 			/* '..' over a mount-point results in 'dir' being exchanged for the mounted
 			   directory-inode. NOTE! We set mounted, so that we can iput the new dir */
 			sb = get_super((*dir)->i_dev);
@@ -38,6 +39,7 @@ struct buffer_head * find_entry(struct m_inode ** dir,
 	i = 0;
 	de = (struct dir_entry *) bh->b_data;
 	while (i < entries) {
+		// 暴力查找文件，能否更快？
 		/*一个目录块读取完毕，未找到目标，则换下一个目录寻找*/
 		if ((char *)de >= BLOCK_SIZE + bh->b_data) {
 			brelse(bh);
@@ -163,6 +165,7 @@ struct m_inode * get_inode(const char * pathname)
 		pathname += namelen;
 		if (namelen <= 0)
 			return inode;
+		// 一层一层进入目录
 		if (!(bh = find_entry(&inode, thisname, namelen, &de))) {
 			iput(inode);
 			return NULL;
@@ -183,12 +186,16 @@ struct m_inode * get_inode(const char * pathname)
 		/user/linux/a.out 返回指向linux的inode节点
 */
 
+// namelen: 文件夹名长度
+// name: 文件名
 struct m_inode * dir_namei(const char * pathname,int * namelen, const char ** name)
 {
 	char c;
 	const char * basename;
 	struct m_inode * dir;
-	const char* _pathname = pathname;
+	int len = strlen(pathname);
+	char* _pathname = new char[len+1];
+	strcpy(_pathname, pathname);
 	basename = pathname;
 	while (true)
 	{	
@@ -201,12 +208,13 @@ struct m_inode * dir_namei(const char * pathname,int * namelen, const char ** na
 	*namelen = pathname - basename - 1;
 	*name = basename;
 	// char* pathdir='\0';
-	int len = strlen(_pathname) - *namelen;
+	len = strlen(_pathname) - *namelen;
 	/*如果父目录字符长度为0，即返回当前工作目录，否则进行查询*/
 	if (len == 0) {
 		fileSystem->current->i_count++;
 		return  fileSystem->current;
 	}
+	_pathname[len] = 0;
 	// strncat(pathdir, _pathname, len);
 	// _pathname[len] = 0;
 	if (!(dir = get_inode(_pathname)))

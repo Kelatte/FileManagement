@@ -51,6 +51,7 @@ int sys_open(string filename, int flag, int mode) {
 			break;
 	}
 
+	// 如果已打开文件个数超过上限，则出错
 	if (fd >= NR_OPEN)
 		return -EINVAL;
 	f = fileSystem->filp[fd] = new file;
