@@ -306,13 +306,16 @@ int cmd_cat(string path) {
     return i;
   }
   if (size == 0) {
-    pinfoc("文件为空");
+    pinfoc("文件为空\n");
   } else if (S_ISREG(inode->i_mode)) {
-    pinfoc("文件大小：" + GetFileSize(size));
-    printf("%s\n", buf);
+    pinfoc("文件大小：" + GetFileSize(size) + '\n');
+    for (i = 0; i < size; ++i) {
+      printf("%x", buf[i]);
+    }
+    printf("\n");
   } else  //其他文件类型以二进制流输出
   {
-    pinfoc("文件大小：" + GetFileSize(size));
+    pinfoc("目录大小：" + GetFileSize(size) + '\n');
     for (i = 0; i < size; ++i) {
       printf("%x", buf[i]);
     }
