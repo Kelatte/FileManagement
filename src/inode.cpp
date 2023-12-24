@@ -209,7 +209,6 @@ void iput(struct m_inode *inode) {
   if (!inode->i_nlinks) {
     truncate(inode);
     free_inode(inode);
-    // printf("******文件删除******");
     return;
   }
   if (inode->i_dirt) {

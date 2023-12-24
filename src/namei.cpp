@@ -120,6 +120,7 @@ struct buffer_head *add_entry(struct m_inode *dir, const char *name,
       de->name[NAME_LEN - 1] = 0;
       for (i = namelen + 1; i < NAME_LEN; i++) de->name[i] = 0;
       bh->b_dirt = 1;
+      dir->i_dirt = 1;
       *res_dir = de;
       return bh;
     }

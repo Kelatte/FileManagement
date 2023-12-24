@@ -20,5 +20,6 @@ int cmd_rmdir(const char * name);
 int cmd_rm(const char * name);
 int cmd_sync();
 int cmd_exit();
+int cmd_dd(const char* name);
 
 void myhint(int code);

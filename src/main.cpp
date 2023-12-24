@@ -40,7 +40,7 @@ void cmd() {
         return;
       }
     }
-    if (i != 1 & i != 2) {
+    if (i != 1 & i != 2 & i != 3) {
       perrorc("your input is Illegal");
       fresh_cmd();
       continue;
@@ -88,6 +88,10 @@ void cmd() {
       cmd_vi(pa);
     } else if (command.compare("sync") == 0) {
       cmd_sync();
+    } else if (command.compare("dd") == 0) {
+      const char* pa = (path+" "+newPath).c_str();
+      int code = cmd_dd(pa);
+      myhint(code);
     } else {
       perrorc("your input is Illegal");
     }

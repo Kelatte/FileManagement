@@ -468,6 +468,7 @@ int cmd_touch(const char* filename, int mode) {
   }
   de->inode = inode->i_num;
   bh->b_dirt = 1;
+  // printf("%d %d\n",dir->i_count,inode->i_count);
   iput(dir);
   iput(inode);
   brelse(bh);
@@ -611,6 +612,35 @@ int cmd_exit() {
   cmd_sync();
   printfc(FG_YELLOW, string("系统时间为: ") + longtoTime(CurrentTime()));
   return 0;
+}
+
+int cmd_dd(const char* name) {
+  int nums,fd,i;
+  char* pathname = new char[strlen(name)+1];
+  if (sscanf(name, "%d %s", &nums, pathname) == 2) {
+        char* data = new char[nums];
+        if (data == nullptr) {
+            fprintf(stderr, "Failed to allocate memory.\n");
+            return -EEXIST;
+        }
+        for (int i = 0; i < nums; ++i) {
+            data[i] = 'A' + (rand() % 26); // Generate random uppercase letters for demonstration
+        }
+        fd = sys_open(pathname, O_APPEND, S_IFREG);   
+        if (fd < 0) {
+          return fd;
+        } 
+        i = sys_write(fd, data, strlen(data));
+        if (i < 0) {
+          sys_close(fd);
+          return i;
+        }
+        psucc("添加成功");
+        sys_close(fd);
+        return 0;
+    } else {
+        return -EINVAL;
+    }
 }
 
 void myhint(int errorCode) {
