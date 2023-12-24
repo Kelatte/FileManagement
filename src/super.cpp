@@ -115,5 +115,5 @@ void initialize_block(int dev) {
   realse_all_blocks();
   realse_inode_table();
   mount_root();
-  // exit(0);
+  exit(0);
 }
