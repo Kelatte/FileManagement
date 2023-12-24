@@ -11,14 +11,15 @@ struct buffer_head *find_entry(struct m_inode **dir, const char *name,
   struct buffer_head *bh;
   struct dir_entry *de;
   struct super_block *sb;
-  char *name_tmp = (char*)malloc(namelen + 1);
+  char *name_tmp = (char *)malloc(namelen + 1);
   if (!name_tmp) {
-      // 内存分配失败处理
-      perror("Memory allocation failed");
-      return NULL;
+    // 内存分配失败处理
+    perror("Memory allocation failed");
+    return NULL;
   }
   // dir只能在直接的块（非索引）中存文件吗？能否支持更大的文件个数
-  entries = (*dir)->i_size / (sizeof(struct dir_entry));  // 目录下的文件总数？目录项总数
+  entries = (*dir)->i_size /
+            (sizeof(struct dir_entry));  // 目录下的文件总数？目录项总数
   *res_dir = NULL;
   if (!namelen) return NULL;
   /* check for '..', as we might have to do some "magic" for it */
@@ -43,7 +44,7 @@ struct buffer_head *find_entry(struct m_inode **dir, const char *name,
   bh = bread(block);
   i = 0;
   de = (struct dir_entry *)bh->b_data;
-  strncpy(name_tmp,name,namelen);
+  strncpy(name_tmp, name, namelen);
   name_tmp[namelen] = 0;
   while (i < entries) {
     // 暴力查找文件，能否更快？
@@ -209,17 +210,17 @@ struct m_inode *dir_namei(const char *pathname, int *namelen,
   /*如果父目录字符长度为0，即返回当前工作目录，否则进行查询*/
   if (len == 0) {
     fileSystem->current->i_count++;
-		delete[] _pathname;
+    delete[] _pathname;
     return fileSystem->current;
   }
   _pathname[len] = 0;
   // strncat(pathdir, _pathname, len);
   // _pathname[len] = 0;
   if (!(dir = get_inode(_pathname))) {
-		delete[] _pathname;
+    delete[] _pathname;
     return NULL;
   }
-	delete[] _pathname;
+  delete[] _pathname;
   return dir;
 }
 

@@ -49,7 +49,9 @@ void cmd() {
     temp >> command >> path >> newPath;
 
     if (command.compare("ls") == 0) {
-      cmd_ls();
+      const char* pa = path.c_str();
+      int code = cmd_ls(pa);
+      myhint(code);
     } else if (command.compare("cd") == 0) {  // command is mkdir
       const char* pa = path.c_str();
       int code = cmd_cd(pa);
@@ -89,12 +91,4 @@ void cmd() {
     }
     fresh_cmd();
   }
-}
-
-int get_space(string s, int start) {
-  int namelen = start;
-  while (s[namelen] == ' ') {
-    namelen++;
-  }
-  return namelen;
 }

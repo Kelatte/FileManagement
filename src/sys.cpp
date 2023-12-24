@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -152,17 +153,21 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
 }
 
 // ls命令 显示当前目录下所有文件
-int cmd_ls() {
+int cmd_ls(string s) {
   int entries;
   int block, i;
   string out = "";
   struct buffer_head* bh;
   struct dir_entry* de;
-  struct m_inode** dir = &fileSystem->current;
+  struct m_inode* dir = (s == "" ? fileSystem->current : get_inode(s.c_str()));
+  if (!dir) {
+    return -ENOENT;
+  }
+  // printf("%s", dir->)
   // 文件大小可能超过1个block
-  entries = (*dir)->i_size / (sizeof(struct dir_entry));
+  entries = dir->i_size / (sizeof(struct dir_entry));
 
-  block = (*dir)->i_zone[0];
+  block = dir->i_zone[0];
   if (block <= 0) {
     return -EPERM;
   }
@@ -174,7 +179,7 @@ int cmd_ls() {
     /*一个目录块读取完毕,则换下一个目录寻找*/
     if ((char*)de >= BLOCK_SIZE + bh->b_data) {
       brelse(bh);
-      block = bmap(*dir, i / DIR_ENTRIES_PER_BLOCK);
+      block = bmap(dir, i / DIR_ENTRIES_PER_BLOCK);
       bh = bread(block);
       if (bh == NULL || block <= 0) {
         /*如果下一个目录项读取失败，则跳过该目录*/
@@ -246,7 +251,7 @@ int cmd_stat(string path) {
 /*cd命令，移动工作目录*/
 int cmd_cd(string path) {
   struct m_inode* dir = NULL;
-  if (dir = get_inode(path.c_str())) {
+  if ((dir = get_inode(path.c_str()))) {
     iput(fileSystem->current);
     fileSystem->current = dir;
     sys_get_work_dir(dir, fileSystem->name);
@@ -281,7 +286,7 @@ int cmd_cat(string path) {
   }
   size = inode->i_size;
   char* buf = new char[size + 2];
-  if (i = sys_read(fd, buf, size) < 0) {
+  if ((i = sys_read(fd, buf, size)) < 0) {
     sys_close(fd);
     iput(inode);
     return i;
@@ -301,7 +306,7 @@ int cmd_cat(string path) {
   }
   sys_close(fd);
   iput(inode);
-  delete buf;
+  delete[] buf;
   return 0;
 }
 

@@ -8,7 +8,7 @@ int sys_write(unsigned int fd, char * buf, int count);
 int sys_lseek(unsigned int fd, off_t offset, int origin);
 int sys_get_work_dir(struct m_inode* inode, std::string & out);
 
-int cmd_ls();
+int cmd_ls(std::string s);
 int cmd_stat(std::string path);
 int cmd_cd(std::string s);
 int cmd_pwd();
