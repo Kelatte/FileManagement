@@ -152,66 +152,6 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
   return 1;
 }
 
-// ls命令 显示当前目录下所有文件
-int cmd_ls(string s) {
-  int entries;
-  int block, i;
-  string out = "";
-  struct buffer_head* bh;
-  struct dir_entry* de;
-  struct m_inode* dir = (s == "" ? fileSystem->current : get_inode(s.c_str()));
-  if (!dir) {
-    return -ENOENT;
-  }
-  // printf("%s", dir->)
-  // 文件大小可能超过1个block
-  entries = dir->i_size / (sizeof(struct dir_entry));
-
-  block = dir->i_zone[0];
-  if (block <= 0) {
-    return -EPERM;
-  }
-  int count = 0;
-  bh = bread(block);
-  i = 0;
-  de = (struct dir_entry*)bh->b_data;
-  while (i < entries) {
-    /*一个目录块读取完毕,则换下一个目录寻找*/
-    if ((char*)de >= BLOCK_SIZE + bh->b_data) {
-      brelse(bh);
-      block = bmap(dir, i / DIR_ENTRIES_PER_BLOCK);
-      bh = bread(block);
-      if (bh == NULL || block <= 0) {
-        /*如果下一个目录项读取失败，则跳过该目录*/
-        i += DIR_ENTRIES_PER_BLOCK;
-        continue;
-      } else
-        de = (struct dir_entry*)bh->b_data;
-    }
-    /*de->inode =0 代表该目录是空的*/
-    if (strcmp(de->name, "..") && strcmp(de->name, ".") && de->inode != 0) {
-      m_inode* inode = iget(0, de->inode);
-      if (inode) {
-        if (S_ISDIR(inode->i_mode))
-          pdirc(de->name);
-        else
-          pfilec(de->name);
-        printf("  ");
-      }
-      count++;
-      iput(inode);
-    }
-    de++;
-    i++;
-  }
-  brelse(bh);
-  if (count <= 0) {
-    pinfoc("该目录为空");
-  }
-  cout << endl;
-  return 0;
-}
-
 /*stat命令，显示文件详细信息*/
 int cmd_stat(string path) {
   const char* basename;
@@ -245,6 +185,81 @@ int cmd_stat(string path) {
   // cout << "最后访问时间: " << longtoTime(inode->i_atime) << endl;
   cout << "最后修改时间: " << longtoTime(inode->i_mtime) << endl;
   // cout << "i节点自身最终被修改时间: " << longtoTime(inode->i_ctime) << endl;
+  return 0;
+}
+
+
+// ls命令 显示当前目录下所有文件
+int cmd_ls(string s) {
+  bool flag = false;
+  int entries;
+  int block, i;
+  string out = "";
+  struct buffer_head* bh;
+  struct dir_entry* de;
+  struct m_inode* dir = ((s == "" || s == "-l") ? fileSystem->current : get_inode(s.c_str()));
+  if (!dir) {
+    return -ENOENT;
+  }
+  // 文件大小可能超过1个block
+  entries = dir->i_size / (sizeof(struct dir_entry));
+
+  block = dir->i_zone[0];
+  if (block <= 0) {
+    return -EPERM;
+  }
+  int count = 0;
+  bh = bread(block);
+  i = 0;
+  de = (struct dir_entry*)bh->b_data;
+  while (i < entries) {
+    /*一个目录块读取完毕,则换下一个目录寻找*/
+    if ((char*)de >= BLOCK_SIZE + bh->b_data) {
+      brelse(bh);
+      block = bmap(dir, i / DIR_ENTRIES_PER_BLOCK);
+      bh = bread(block);
+      if (bh == NULL || block <= 0) {
+        /*如果下一个目录项读取失败，则跳过该目录*/
+        i += DIR_ENTRIES_PER_BLOCK;
+        continue;
+      } else
+        de = (struct dir_entry*)bh->b_data;
+    }
+    /*de->inode =0 代表该目录是空的*/
+    if (strcmp(de->name, "..") && strcmp(de->name, ".") && de->inode != 0) {
+      m_inode* inode = iget(0, de->inode);
+      if (inode) {
+        if (s == "-l") {
+          if (!flag) {
+            printf("%8s %13s %14s %35s\n", "mode", "size", "name", "最后修改时间");
+            flag = true;
+          }
+          printf("%10s %13s ", GetFileMode(inode->i_mode).c_str(), GetFileSize(inode->i_size).c_str());
+          if (S_ISDIR(inode->i_mode)) {
+            printfc(FG_BLACK, BG_GREEN, "%14s", de->name);
+          } else {
+            printfc(FG_WHITE, "%14s", de->name);
+          }
+          printf(" %35s", longtoTime(inode->i_mtime));
+        } else {
+          if (S_ISDIR(inode->i_mode))
+            pdirc(de->name);
+          else
+            pfilec(de->name);
+          printf("  ");
+        }
+      }
+      count++;
+      iput(inode);
+    }
+    de++;
+    i++;
+  }
+  brelse(bh);
+  if (count <= 0) {
+    pinfoc("该目录为空");
+  }
+  cout << endl;
   return 0;
 }
 
