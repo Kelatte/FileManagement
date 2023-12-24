@@ -152,43 +152,6 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
   return 1;
 }
 
-/*stat命令，显示文件详细信息*/
-int cmd_stat(string path) {
-  const char* basename;
-  int namelen;
-  struct m_inode *dir, *inode;
-  struct buffer_head *bh, *dir_block;
-  struct dir_entry* de;
-  if (!(dir = dir_namei(path.c_str(), &namelen, &basename))) return -ENOENT;
-  if (!namelen) {
-    iput(dir);
-    return -ENOENT;
-  }
-  bh = find_entry(&dir, basename, namelen, &de);
-  if (!bh) {
-    iput(dir);
-    return -ENOENT;
-  }
-  if (!(inode = iget(dir->i_dev, de->inode))) {
-    iput(dir);
-    brelse(bh);
-    return -EPERM;
-  }
-
-  cout << "name: " << string(basename) << endl;
-  cout << "dev: " << inode->i_dev << endl;
-  cout << "mode: " << GetFileMode(inode->i_mode) << endl;
-  cout << "nlinks: " << to_string(inode->i_nlinks) << endl;
-  cout << "num: " << inode->i_num << endl;
-  cout << "firstzone: " << inode->i_zone[0] << endl;
-  cout << "size: " << GetFileSize(inode->i_size) << endl;
-  // cout << "最后访问时间: " << longtoTime(inode->i_atime) << endl;
-  cout << "最后修改时间: " << longtoTime(inode->i_mtime) << endl;
-  // cout << "i节点自身最终被修改时间: " << longtoTime(inode->i_ctime) << endl;
-  return 0;
-}
-
-
 // ls命令 显示当前目录下所有文件
 int cmd_ls(string s) {
   bool flag = false;
@@ -260,6 +223,42 @@ int cmd_ls(string s) {
     pinfoc("该目录为空");
   }
   cout << endl;
+  return 0;
+}
+
+/*stat命令，显示文件详细信息*/
+int cmd_stat(string path) {
+  const char* basename;
+  int namelen;
+  struct m_inode *dir, *inode;
+  struct buffer_head *bh, *dir_block;
+  struct dir_entry* de;
+  if (!(dir = dir_namei(path.c_str(), &namelen, &basename))) return -ENOENT;
+  if (!namelen) {
+    iput(dir);
+    return -ENOENT;
+  }
+  bh = find_entry(&dir, basename, namelen, &de);
+  if (!bh) {
+    iput(dir);
+    return -ENOENT;
+  }
+  if (!(inode = iget(dir->i_dev, de->inode))) {
+    iput(dir);
+    brelse(bh);
+    return -EPERM;
+  }
+
+  cout << "name: " << string(basename) << endl;
+  cout << "dev: " << inode->i_dev << endl;
+  cout << "mode: " << GetFileMode(inode->i_mode) << endl;
+  cout << "nlinks: " << to_string(inode->i_nlinks) << endl;
+  cout << "num: " << inode->i_num << endl;
+  cout << "firstzone: " << inode->i_zone[0] << endl;
+  cout << "size: " << GetFileSize(inode->i_size) << endl;
+  // cout << "最后访问时间: " << longtoTime(inode->i_atime) << endl;
+  cout << "最后修改时间: " << longtoTime(inode->i_mtime) << endl;
+  // cout << "i节点自身最终被修改时间: " << longtoTime(inode->i_ctime) << endl;
   return 0;
 }
 
