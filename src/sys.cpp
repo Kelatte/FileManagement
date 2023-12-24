@@ -159,6 +159,7 @@ int cmd_ls() {
   struct buffer_head* bh;
   struct dir_entry* de;
   struct m_inode** dir = &fileSystem->current;
+  // 文件大小可能超过1个block
   entries = (*dir)->i_size / (sizeof(struct dir_entry));
 
   block = (*dir)->i_zone[0];
@@ -418,7 +419,6 @@ int cmd_touch(const char* filename, int mode) {
   struct m_inode *dir, *inode;
   struct buffer_head* bh;
   struct dir_entry* de;
-
   if (!(dir = dir_namei(filename, &namelen, &basename))) return -ENOENT;
   if (!namelen) {
     iput(dir);

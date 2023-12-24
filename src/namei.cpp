@@ -11,9 +11,14 @@ struct buffer_head *find_entry(struct m_inode **dir, const char *name,
   struct buffer_head *bh;
   struct dir_entry *de;
   struct super_block *sb;
-
+  char *name_tmp = (char*)malloc(namelen + 1);
+  if (!name_tmp) {
+      // 内存分配失败处理
+      perror("Memory allocation failed");
+      return NULL;
+  }
   // dir只能在直接的块（非索引）中存文件吗？能否支持更大的文件个数
-  entries = (*dir)->i_size / (sizeof(struct dir_entry));  // 目录下的文件总数？
+  entries = (*dir)->i_size / (sizeof(struct dir_entry));  // 目录下的文件总数？目录项总数
   *res_dir = NULL;
   if (!namelen) return NULL;
   /* check for '..', as we might have to do some "magic" for it */
@@ -38,6 +43,8 @@ struct buffer_head *find_entry(struct m_inode **dir, const char *name,
   bh = bread(block);
   i = 0;
   de = (struct dir_entry *)bh->b_data;
+  strncpy(name_tmp,name,namelen);
+  name_tmp[namelen] = 0;
   while (i < entries) {
     // 暴力查找文件，能否更快？
     /*一个目录块读取完毕，未找到目标，则换下一个目录寻找*/
@@ -52,8 +59,7 @@ struct buffer_head *find_entry(struct m_inode **dir, const char *name,
       }
       de = (struct dir_entry *)bh->b_data;
     }
-
-    if (de->inode != 0 && !strcmp(name, de->name)) {
+    if (de->inode != 0 && !strcmp(name_tmp, de->name)) {
       *res_dir = de;
       return bh;
     }
@@ -138,7 +144,7 @@ struct m_inode *get_inode(const char *pathname) {
   struct dir_entry *de;
   if ((c = pathname[0]) == '/') {
     inode = fileSystem->root;
-    pathname++;
+    pathname++;  // 为什么++？？
   } else if (c)
     inode = fileSystem->current;
   else
@@ -162,6 +168,10 @@ struct m_inode *get_inode(const char *pathname) {
     brelse(bh);
     iput(inode);
     if (!(inode = iget(idev, inr))) return NULL;
+    if (pathname[0] == '\0') {
+      return inode;
+    }
+    pathname += 1;
   }
 }
 /*
@@ -175,6 +185,7 @@ struct m_inode *get_inode(const char *pathname) {
 
 // namelen: 文件夹名长度
 // name: 文件名
+// 给路径名 找目录
 struct m_inode *dir_namei(const char *pathname, int *namelen,
                           const char **name) {
   char c;
@@ -184,6 +195,7 @@ struct m_inode *dir_namei(const char *pathname, int *namelen,
   char *_pathname = new char[len + 1];
   strcpy(_pathname, pathname);
   basename = pathname;
+  // 找到父目录的路径和文件名
   while (true) {
     c = pathname[0];
     pathname++;
@@ -202,6 +214,7 @@ struct m_inode *dir_namei(const char *pathname, int *namelen,
   _pathname[len] = 0;
   // strncat(pathdir, _pathname, len);
   // _pathname[len] = 0;
+  // 给出指定路径的inode
   if (!(dir = get_inode(_pathname))) return NULL;
   return dir;
 }
@@ -302,6 +315,7 @@ struct m_inode *get_father(struct m_inode *inode) {
   if (block <= 0) return NULL;
   buffer_head *bh = bread(block);
   struct dir_entry *de = (struct dir_entry *)bh->b_data;
+  // 第一个目录项为. 第二个为..
   de++;
   struct m_inode *dir = iget(inode->i_dev, de->inode);
   brelse(bh);

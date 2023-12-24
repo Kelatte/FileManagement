@@ -225,13 +225,19 @@ int bmap(struct m_inode *inode, int block) {
   struct buffer_head *bh;
   int i;
 
-  if (block < 0) printf("试图读取不存在的数据块");
-  if (block >= 7 + 512 + 512 * 512) printf("试图读取超过范围的数据块");
-  /*直接查询*/
+  if (block < 0) {
+    printf("试图读取不存在的数据块");
+    return -1;
+  }
+  if (block >= 7 + 512 + 512 * 512) {
+    printf("试图读取超过范围的数据块");
+    return -1;
+  }
+  /*直接索引*/
   if (block < 7) {
     return inode->i_zone[block];
   }
-  /*一级目录查询*/
+  /*一级索引查询*/
   block -= 7;
   if (block < 512) {
     if (!inode->i_zone[7]) return 0;
@@ -240,15 +246,17 @@ int bmap(struct m_inode *inode, int block) {
     brelse(bh);
     return i;
   }
-  /*二级目录查询*/
+  /*二级索引查询*/
   block -= 512;
   if (!inode->i_zone[8]) return 0;
   bh = bread(inode->i_zone[8]);
-  i = ((unsigned short *)bh->b_data)[block >> 9];
+  // 找到对应的一级索引
+  i = ((unsigned short *)bh->b_data)[block / 512];
   brelse(bh);
   if (!i) return 0;
   bh = bread(i);
-  i = ((unsigned short *)bh->b_data)[block & 511];
+  // 找到最终物理块位置
+  i = ((unsigned short *)bh->b_data)[block % 512];
   brelse(bh);
   return i;
 }

@@ -66,7 +66,6 @@ void cmd() {
       const char* pa = path.c_str();
       int code = cmd_cat(pa);
       myhint(code);
-
     } else if (command.compare("rmdir") == 0) {  // command is rmdir
       const char* pa = path.c_str();
       int code = cmd_rmdir(pa);

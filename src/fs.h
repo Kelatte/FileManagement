@@ -14,7 +14,7 @@
 /*一个block中inode个数---32*/
 #define INODES_PER_BLOCK ((BLOCK_SIZE)/(sizeof (struct d_inode)))
 #define SUPER_MAGIC 0x137F
-/**/
+/*最多打开20个文件*/
 #define NR_OPEN 20
 /*内存中最多的inode的数量*/
 #define NR_INODE 32
