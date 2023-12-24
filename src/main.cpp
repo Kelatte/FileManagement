@@ -89,6 +89,8 @@ void cmd() {
     } else if (command.compare("sync") == 0) {
       cmd_sync();
     }
+    path = "";
+    newPath = "";
     fresh_cmd();
   }
 }
