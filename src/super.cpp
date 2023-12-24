@@ -1,6 +1,7 @@
 #include <iostream>
-
+#include <algorithm>
 #include "fs.h"
+#include <cassert>
 using namespace std;
 
 static super_block* sb[NR_SUPER];
@@ -76,4 +77,43 @@ void mount_root(void) {
     if (!get_bit(i % BLOCK_BIT, p->s_imap[i / BLOCK_BIT]->b_data)) free++;
   printf("%d/%d free inodes\n\r", free, p->s_ninodes);
   printf("system load!\n");
+}
+void initialize_block(int dev) {
+  realse_all_blocks();
+  realse_inode_table();
+  auto ds = new d_super_block;
+  memset(ds, 0, sizeof(d_super_block));
+  ds->s_imap_blocks = 3; // <= I_MAP_SLOTS;
+  ds->s_zmap_blocks = 8; // <= Z_MAP_SLOTS;
+  ds->s_magic = SUPER_MAGIC;
+  ds->s_firstdatazone = 700;
+  ds->s_nzones = (1<<16) - 700;
+  ds->s_ninodes = (ds->s_firstdatazone - 2 - ds->s_imap_blocks - ds->s_zmap_blocks) * INODES_PER_BLOCK;
+  ds->s_max_size = std::min(0ull + ds->s_nzones * BLOCK_SIZE, 0ull + BLOCK_SIZE * (7 + 512 + 512 * 512));
+  ds->s_log_zone_size = 0;
+  assert(ds->s_imap_blocks * 8 * BLOCK_SIZE >= ds->s_ninodes);
+  assert(ds->s_zmap_blocks * 8 * BLOCK_SIZE >= ds->s_nzones);
+  // 可能是要先创建inode再设置super
+  // ds->s_firstdatazone = 2 + ds->s_imap_blocks + ds->s_zmap_blocks + ds->s_ninodes;
+  // 写map
+  int block = 2, i;
+  auto buffer = new buffer_block;
+  memset(buffer, 0, sizeof(buffer_block));
+  for (i = 0; i < ds->s_imap_blocks; i++) {
+    bwrite(block, buffer);
+    block++;
+  }
+  for (i = 0; i < ds->s_zmap_blocks; i++) {
+    bwrite(block, buffer);
+    block++;
+  }
+  bwrite(1, (char*)ds);
+  read_super(dev);
+  auto inode = new_inode(dev);
+  inode->i_dirt = 1;
+  inode->i_zone[0] = new_block(inode->i_dev);
+  realse_all_blocks();
+  realse_inode_table();
+  mount_root();
+  // exit(0);
 }

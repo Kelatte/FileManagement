@@ -94,7 +94,7 @@ static void read_inode(struct m_inode *inode) {
   block =
       2 + sb->s_imap_blocks + sb->s_zmap_blocks +
       (inode->i_num - 1) /
-          INODES_PER_BLOCK;  // 2 是一个引导块一个超级块？-1是因为从1开始吗？
+          INODES_PER_BLOCK;  // 2 是一个引导块一个超级块, -1是因为从1开始
   if (!(bh = bread(block))) printf("unable to read i-node block");
 
   // 该磁盘块上的inode都读，但暂时只用这一个

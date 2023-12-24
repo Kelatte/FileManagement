@@ -78,7 +78,7 @@ struct d_super_block {
 	unsigned short s_nzones;  /*数据块数*/
 	unsigned short s_imap_blocks; /*i节点位图的数据块个数*/
 	unsigned short s_zmap_blocks; /*逻辑块位图的数据块个数*/
-	unsigned short s_firstdatazone;/*第一个数据块的编号*/
+	unsigned short s_firstdatazone;/*第一个数据块的编号，即偏移量,数据块与i节点的bmap可以有交集*/
 	unsigned short s_log_zone_size;
 	unsigned int s_max_size;
 	unsigned short s_magic;/*文件类型*/
@@ -94,8 +94,8 @@ struct super_block {
 	unsigned int s_max_size;
 	unsigned short s_magic;
 	/* These are only in memory */
-	struct buffer_head * s_imap[8];/*i节点位图数组*/
-	struct buffer_head * s_zmap[8];/*逻辑节点位图数组*/
+	struct buffer_head * s_imap[I_MAP_SLOTS];/*i节点位图数组*/
+	struct buffer_head * s_zmap[Z_MAP_SLOTS];/*逻辑节点位图数组*/
 	unsigned short s_dev;
 	struct m_inode * s_isup;
 	struct m_inode * s_imount;
@@ -161,12 +161,14 @@ struct FileManageMent
 };
 extern FileManageMent* fileSystem;
 
-extern buffer_head* bread(int block);
-extern int brelse(buffer_head* bh);
-extern struct super_block * get_super(int dev);
-extern struct m_inode *iget(int dev, int nr);
-extern void mount_root();
-extern int bmap(struct m_inode * inode, int block);
+buffer_head* bread(int block);
+char* bwrite(int block, char* bh);
+int brelse(buffer_head* bh);
+struct super_block * get_super(int dev);
+struct m_inode *iget(int dev, int nr);
+void mount_root();
+void initialize_block(int dev);
+int bmap(struct m_inode * inode, int block);
 struct m_inode * get_inode(const char * pathname);
 //struct m_inode * get_dir(const char * pathname);
 void free_block(int dev, int block);

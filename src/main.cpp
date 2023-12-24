@@ -92,6 +92,10 @@ void cmd() {
       const char* pa = str.c_str();
       int code = cmd_dd(pa);
       myhint(code);
+    } else if (command.compare("sync") == 0) {
+      cmd_sync();
+    } else if (command.compare("init") == 0) {
+      initialize_block(ROOT_DEV);
     } else {
       perrorc("your input is Illegal");
     }

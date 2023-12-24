@@ -53,7 +53,7 @@ static buffer_head* get_hash_table(int block) {
   return NULL;
 }
 //磁盘块写入函数
-static char* bwrite(int block, char* bh) {
+char* bwrite(int block, char* bh) {
   ofstream disk;
   /*血泪啊，c++想要修改文件部分的值，必须以读加写模式打开，单纯以写模式打开，会清空数据*/
   disk.open("hdc-0.11.img", ios::binary | ios::out | ios::in);
@@ -100,7 +100,7 @@ buffer_head* bread(int block) {
   //从磁盘中读取
   ifstream disk;
   disk.open("hdc-0.11.img", ios::binary);
-  disk.seekg((block + 1) * BLOCK_SIZE);  // TODO: 为什么要加1
+  disk.seekg((block + 1) * BLOCK_SIZE); // 整体偏移1位，以适应已有的img
   disk.read(bh->b_data, BLOCK_SIZE);
   // cout << block<<"  Reading from the file"<< endl;
   disk.close();
