@@ -10,7 +10,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 /*改自open_namei*/
 int open_file(const char* pathname, int flag, int mode,
-              struct m_inode** res_inode) {
+              struct m_inode* &res_inode) {
   const char* basename;
   int inr, dev, namelen;
   struct m_inode *dir, *inode;
@@ -46,7 +46,7 @@ int open_file(const char* pathname, int flag, int mode,
     bh->b_dirt = 1;  // 该目录项所在的块，有一部分修改了即dirt
     brelse(bh);
     iput(dir);
-    *res_inode = inode;
+    res_inode = inode;
     return 0;
   }
   /*文件存在*/
@@ -60,7 +60,7 @@ int open_file(const char* pathname, int flag, int mode,
     return -EACCES;
   }
   inode->i_atime = CurrentTime();
-  *res_inode = inode;
+  res_inode = inode;
   return 0;
 }
 

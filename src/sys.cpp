@@ -8,6 +8,7 @@
 #include "printfc.h"
 using namespace std;
 
+
 static string GetFileSize(long size) {
   float num = 1024.00;  // byte
   if (size < num) return to_string(size) + "B";
@@ -23,7 +24,6 @@ static string GetFileMode(long mode) {
   if (S_ISREG(mode)) return "普通文件";
   return "未知文件类型";
 }
-
 /*文件分两种，普通文件和目录文件
 对于目录文件，用户使用时想要的是
 使用一个目录指针，该目录指针可以得到每一条目录的名字
@@ -31,7 +31,16 @@ static string GetFileMode(long mode) {
 使用一个文件指针，该文件指针可以得到文件指定的内容
 可以得到文件名，文件大小等信息
 */
-/*文件操作的系统调用，包括open，close，read，write，lseek*/
+/*文件操作的系统调用，包括open，close，read，write*/
+
+
+/*
+* @brief 通过文件名，访问方式，文件类型得到该文件的描述符
+* @param filename 需要访问的文件名
+* @param flag 访问方式
+* @param mode 文件类型
+* @return 文件描述符
+*/
 int sys_open(string filename, int flag, int mode) {
   struct m_inode* inode;
   struct file* f;
@@ -44,7 +53,7 @@ int sys_open(string filename, int flag, int mode) {
   // 如果已打开文件个数超过上限，则出错
   if (fd >= NR_OPEN) return -EINVAL;
   f = fileSystem->filp[fd] = new file;
-  if ((i = open_file(filename.c_str(), flag, mode, &inode)) < 0) {
+  if ((i = open_file(filename.c_str(), flag, mode, inode)) < 0) {
     fileSystem->filp[fd] = NULL;
     delete f;
     return i;
@@ -56,6 +65,10 @@ int sys_open(string filename, int flag, int mode) {
   f->f_pos = 0;
   return (fd);
 }
+
+/*
+* @brief 通过文件描述符关闭文件
+*/
 int sys_close(unsigned int fd) {
   struct file* filp;
 
@@ -67,6 +80,10 @@ int sys_close(unsigned int fd) {
   fileSystem->filp[fd] = NULL;
   return (0);
 }
+
+/*
+* @brief 通过文件描述符读取指定长度到buf中
+*/
 int sys_read(unsigned int fd, char* buf, int count) {
   struct file* file;
   struct m_inode* inode;
@@ -86,6 +103,10 @@ int sys_read(unsigned int fd, char* buf, int count) {
   printf("(Read)inode->i_mode=%06o\n\r", inode->i_mode);
   return -EINVAL;
 }
+
+/*
+* @brief 将buf中指定长度的内容写入到文件描述符所指的文件中,只允许写普通文件
+*/
 int sys_write(unsigned int fd, char* buf, int count) {
   struct file* file;
   struct m_inode* inode;
@@ -99,30 +120,7 @@ int sys_write(unsigned int fd, char* buf, int count) {
   printf("(Write)inode->i_mode=%06o\n\r", inode->i_mode);
   return -EINVAL;
 }
-/*移动文件指针*/
-int sys_lseek(unsigned int fd, off_t offset, int origin) {
-  struct file* file;
-  int tmp;
-  if (fd >= NR_OPEN || !(file = fileSystem->filp[fd]) || !(file->f_inode))
-    return -EBADF;
-  switch (origin) {
-    case 0:
-      if (offset < 0) return -EINVAL;
-      file->f_pos = offset;
-      break;
-    case 1:
-      if (file->f_pos + offset < 0) return -EINVAL;
-      file->f_pos += offset;
-      break;
-    case 2:
-      if ((tmp = file->f_inode->i_size + offset) < 0) return -EINVAL;
-      file->f_pos = tmp;
-      break;
-    default:
-      return -EINVAL;
-  }
-  return file->f_pos;
-}
+
 int sys_get_work_dir(struct m_inode* inode, string& out) {
   int inum = inode->i_num;
   if (inum == fileSystem->root->i_num) {
@@ -136,14 +134,14 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
 
   while (inode->i_num != fileSystem->root->i_num) {
     if (!get_name(inode, name, 20)) {
-      return NULL;
+      return -1;
     }
 
     string s(&name[0], &name[strlen(name)]);
     s.insert(0, "/");
     out.insert(0, s);
     if (!(fa = get_father(inode))) {
-      return NULL;
+      return -1;
     };
 
     iput(inode);

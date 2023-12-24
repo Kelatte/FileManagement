@@ -196,6 +196,6 @@ int set_bit(int k, char* data);
 unsigned long CurrentTime();
 char* longtoTime(long l);
 int open_file(const char * pathname, int flag, int mode,
-	struct m_inode ** res_inode);
+	struct m_inode* &res_inode);
 int file_read(struct m_inode * inode, struct file * filp, char * buf, int count);
 int file_write(struct m_inode * inode, struct file * filp, char * buf, int count);

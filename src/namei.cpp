@@ -285,7 +285,7 @@ int get_name(struct m_inode *inode, char *buf, int size) {
   /*从父节点查询*/
   entries = dir->i_size / (sizeof(struct dir_entry));
   block = dir->i_zone[0];
-  if (block <= 0) return NULL;
+  if (block <= 0) return -1;
   bh = bread(block);
   i = 0;
   de = (struct dir_entry *)bh->b_data;
@@ -313,7 +313,7 @@ int get_name(struct m_inode *inode, char *buf, int size) {
     i++;
   }
   brelse(bh);
-  return NULL;
+  return -1;
 }
 /*给出一个inode ，返回该inode的父节点*/
 struct m_inode *get_father(struct m_inode *inode) {
