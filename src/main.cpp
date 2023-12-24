@@ -88,6 +88,8 @@ void cmd() {
       cmd_vi(pa);
     } else if (command.compare("sync") == 0) {
       cmd_sync();
+    } else {
+      perrorc("your input is Illegal");
     }
     path = "";
     newPath = "";
