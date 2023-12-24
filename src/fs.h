@@ -19,6 +19,8 @@
 /*内存中最多的inode的数量*/
 #define NR_INODE 32
 #define NR_SUPER 8
+// 最多保存count=0的buffer个数
+#define BUFFER_SIZE 1024
 
 /*文件读写权限*/
 #define O_RDONLY 1

@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 
 #include "fs.h"
 using namespace std;
@@ -13,25 +14,26 @@ using namespace std;
 4. 对于多进程而言，需要定义brelse 让进程放弃对block的使用权
 ！！！注意 目前由于没有多进程，故对于b_count等信号量使用并不规范
 */
-map<int, buffer_head*> blocks;
+map<int, buffer_head*> blocks; // 所有block dirt,count任意，但一定是uptodate
+set<int> freeblocks; // 所有count为=0的block
 
 /*向内存中申请一块空间存放block*/
 static buffer_head* getblk(int block) {
   buffer_head* bh;
-  bh = blocks[block];
-  if (bh)  //如果内存中已经存在该数据块，则释放该其内存
-  {
-    if (bh->b_uptodate) {
-      cerr << "尝试申请一块已经在内存中存在，且最新的数据块" << endl;
-      return NULL;
+
+  if (!blocks.count(block)) {
+    if (freeblocks.size() >= BUFFER_SIZE) {
+      int f = *freeblocks.begin();
+      bh = blocks[f];
+      freeblocks.erase(f);
+      blocks.erase(f);
+    } else {
+      auto bb = new buffer_block();
+      bh = new buffer_head();
+      bh->b_data = bb;
     }
-    delete blocks[block]->b_data;
-    delete blocks[block];
+    bh->b_blocknr = block;
   }
-  auto bb = new buffer_block();
-  bh = new buffer_head();
-  bh->b_data = bb;
-  bh->b_blocknr = block;
   bh->b_count = 1;
   bh->b_dirt = 0;
   //刚刚申请的内存还未读入数据块
@@ -61,18 +63,26 @@ static char* bwrite(int block, char* bh) {
   disk.close();
   return bh;
 }
-void realse_all_blocks() {
-  for (auto i : blocks) {
-    auto bh = i.second;
+static bool realse_block(buffer_head* bh) {
     if (bh->b_dirt) {
       // printf("WARING %d b_count!=0 \n",i.first);
-      printf("%d block write\n", i.first);
+      // printf("%d block write\n", i.first);
       bwrite(bh->b_blocknr, bh->b_data);
       delete bh->b_data;
       delete bh;
+      return true;
     }
+  return false;
+}
+void realse_all_blocks() {
+  for (auto i : blocks) {
+    auto bh = i.second;
+    if (realse_block(bh))
+      printf("%d block write\n", i.first);
+    
   }
   blocks.clear();
+  freeblocks.clear();
 }
 
 /*
@@ -81,8 +91,10 @@ void realse_all_blocks() {
 buffer_head* bread(int block) {
   buffer_head* bh;
   //从blocks查找看该block是否已经读入内存，存在则直接返回
-  if (bh = get_hash_table(block)) {
-    bh->b_count++;
+  if ((bh = get_hash_table(block))) {
+    if (bh->b_count++ == 0) {
+      freeblocks.erase(block);
+    }
     return bh;
   }
   //向blocks申请内存中block
@@ -90,7 +102,7 @@ buffer_head* bread(int block) {
   //从磁盘中读取
   ifstream disk;
   disk.open("hdc-0.11.img", ios::binary);
-  disk.seekg((block + 1) * BLOCK_SIZE);
+  disk.seekg((block + 1) * BLOCK_SIZE); // TODO: 为什么要加1
   disk.read(bh->b_data, BLOCK_SIZE);
   // cout << block<<"  Reading from the file"<< endl;
   disk.close();
@@ -121,6 +133,9 @@ void free_block(int dev, int block) {
     /*修改uptodata，表示内存中数据不是最新的*/
     bh->b_uptodate = 0;
     brelse(bh);
+    // 因为不再uptodate，因此没有必要保存，下次用到还是用bread
+    blocks.erase(block);
+    freeblocks.erase(block);
   }
   /*修改数据块位图*/
   block -= sb->s_firstdatazone - 1;
@@ -186,16 +201,13 @@ int brelse(buffer_head* bh) {
     bh->b_count--;
     return 1;
   }
-  for (auto i : blocks) {
-    auto bh = i.second;
-    if (bh->b_dirt) {
-      // printf("WARING %d b_count!=0 \n",i.first);
-      printf("%d block write\n", i.first);
-      bwrite(bh->b_blocknr, bh->b_data);
-      bh->b_dirt = 0;
-    }
+  if (bh->b_dirt) {
+    // printf("WARING %d b_count!=0 \n",i.first);
+    bwrite(bh->b_blocknr, bh->b_data);
+    bh->b_dirt = 0;
   }
   bh->b_count--;
+  freeblocks.insert(bh->b_blocknr);
   //暂且不考虑内存的释放
   return 1;
 }
