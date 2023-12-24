@@ -9,7 +9,7 @@
 using namespace std;
 void cmd();
 void init();
-extern FileManageMent* fileSystem = new FileManageMent();
+FileManageMent* fileSystem = new FileManageMent();
 int main() {
   // let's go!!!
   init();
@@ -87,10 +87,9 @@ void cmd() {
       const char* pa = path.c_str();
       int code = cmd_vi(pa);
       myhint(code);
-    } else if (command.compare("sync") == 0) {
-      cmd_sync();
     } else if (command.compare("dd") == 0) {
-      const char* pa = (path+" "+newPath).c_str();
+      string str = path + " " + newPath;
+      const char* pa = str.c_str();
       int code = cmd_dd(pa);
       myhint(code);
     } else {

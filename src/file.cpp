@@ -10,7 +10,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 /*改自open_namei*/
 int open_file(const char* pathname, int flag, int mode,
-              struct m_inode* &res_inode) {
+              struct m_inode*& res_inode) {
   const char* basename;
   int inr, dev, namelen;
   struct m_inode *dir, *inode;

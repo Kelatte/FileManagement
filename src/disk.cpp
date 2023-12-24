@@ -14,8 +14,8 @@ using namespace std;
 4. 对于多进程而言，需要定义brelse 让进程放弃对block的使用权
 ！！！注意 目前由于没有多进程，故对于b_count等信号量使用并不规范
 */
-map<int, buffer_head*> blocks; // 所有block dirt,count任意，但一定是uptodate
-set<int> freeblocks; // 所有count为=0的block
+map<int, buffer_head*> blocks;  // 所有block dirt,count任意，但一定是uptodate
+set<int> freeblocks;            // 所有count为=0的block
 
 /*向内存中申请一块空间存放block*/
 static buffer_head* getblk(int block) {
@@ -64,22 +64,20 @@ static char* bwrite(int block, char* bh) {
   return bh;
 }
 static bool realse_block(buffer_head* bh) {
-    if (bh->b_dirt) {
-      // printf("WARING %d b_count!=0 \n",i.first);
-      // printf("%d block write\n", i.first);
-      bwrite(bh->b_blocknr, bh->b_data);
-      delete bh->b_data;
-      delete bh;
-      return true;
-    }
+  if (bh->b_dirt) {
+    // printf("WARING %d b_count!=0 \n",i.first);
+    // printf("%d block write\n", i.first);
+    bwrite(bh->b_blocknr, bh->b_data);
+    delete bh->b_data;
+    delete bh;
+    return true;
+  }
   return false;
 }
 void realse_all_blocks() {
   for (auto i : blocks) {
     auto bh = i.second;
-    if (realse_block(bh))
-      printf("%d block write\n", i.first);
-    
+    if (realse_block(bh)) printf("%d block write\n", i.first);
   }
   blocks.clear();
   freeblocks.clear();
@@ -102,7 +100,7 @@ buffer_head* bread(int block) {
   //从磁盘中读取
   ifstream disk;
   disk.open("hdc-0.11.img", ios::binary);
-  disk.seekg((block + 1) * BLOCK_SIZE); // TODO: 为什么要加1
+  disk.seekg((block + 1) * BLOCK_SIZE);  // TODO: 为什么要加1
   disk.read(bh->b_data, BLOCK_SIZE);
   // cout << block<<"  Reading from the file"<< endl;
   disk.close();

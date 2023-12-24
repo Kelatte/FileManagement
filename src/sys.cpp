@@ -8,7 +8,6 @@
 #include "printfc.h"
 using namespace std;
 
-
 static string GetFileSize(long size) {
   float num = 1024.00;  // byte
   if (size < num) return to_string(size) + "B";
@@ -33,14 +32,13 @@ static string GetFileMode(long mode) {
 */
 /*文件操作的系统调用，包括open，close，read，write*/
 
-
 /*
-* @brief 通过文件名，访问方式，文件类型得到该文件的描述符
-* @param filename 需要访问的文件名
-* @param flag 访问方式
-* @param mode 文件类型
-* @return 文件描述符
-*/
+ * @brief 通过文件名，访问方式，文件类型得到该文件的描述符
+ * @param filename 需要访问的文件名
+ * @param flag 访问方式
+ * @param mode 文件类型
+ * @return 文件描述符
+ */
 int sys_open(string filename, int flag, int mode) {
   struct m_inode* inode;
   struct file* f;
@@ -67,8 +65,8 @@ int sys_open(string filename, int flag, int mode) {
 }
 
 /*
-* @brief 通过文件描述符关闭文件
-*/
+ * @brief 通过文件描述符关闭文件
+ */
 int sys_close(unsigned int fd) {
   struct file* filp;
 
@@ -82,8 +80,8 @@ int sys_close(unsigned int fd) {
 }
 
 /*
-* @brief 通过文件描述符读取指定长度到buf中
-*/
+ * @brief 通过文件描述符读取指定长度到buf中
+ */
 int sys_read(unsigned int fd, char* buf, int count) {
   struct file* file;
   struct m_inode* inode;
@@ -105,8 +103,8 @@ int sys_read(unsigned int fd, char* buf, int count) {
 }
 
 /*
-* @brief 将buf中指定长度的内容写入到文件描述符所指的文件中,只允许写普通文件
-*/
+ * @brief 将buf中指定长度的内容写入到文件描述符所指的文件中,只允许写普通文件
+ */
 int sys_write(unsigned int fd, char* buf, int count) {
   struct file* file;
   struct m_inode* inode;
@@ -125,7 +123,7 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
   int inum = inode->i_num;
   if (inum == fileSystem->root->i_num) {
     out = "/";
-    return 1;
+    return 0;
   }
   out = "";
   char name[20];
@@ -147,7 +145,7 @@ int sys_get_work_dir(struct m_inode* inode, string& out) {
     iput(inode);
     inode = fa;
   }
-  return 1;
+  return 0;
 }
 
 // ls命令 显示当前目录下所有文件
@@ -158,7 +156,8 @@ int cmd_ls(string s) {
   string out = "";
   struct buffer_head* bh;
   struct dir_entry* de;
-  struct m_inode* dir = ((s == "" || s == "-l") ? fileSystem->current : get_inode(s.c_str()));
+  struct m_inode* dir =
+      ((s == "" || s == "-l") ? fileSystem->current : get_inode(s.c_str()));
   if (!dir) {
     return -ENOENT;
   }
@@ -192,10 +191,12 @@ int cmd_ls(string s) {
       if (inode) {
         if (s == "-l") {
           if (!flag) {
-            printf("%8s %13s %14s %35s\n", "mode", "size", "name", "最后修改时间");
+            printf("%8s %13s %14s %35s\n", "mode", "size", "name",
+                   "最后修改时间");
             flag = true;
           }
-          printf("%10s %13s ", GetFileMode(inode->i_mode).c_str(), GetFileSize(inode->i_size).c_str());
+          printf("%10s %13s ", GetFileMode(inode->i_mode).c_str(),
+                 GetFileSize(inode->i_size).c_str());
           if (S_ISDIR(inode->i_mode)) {
             printfc(FG_BLACK, BG_GREEN, "%14s", de->name);
           } else {
@@ -577,7 +578,7 @@ int cmd_rm(const char* name) {
   }
   /*如果文件的引用数已经为0，说明出现程序bug，并修正文件i_nlinks 为1*/
   if (!inode->i_nlinks) {
-    printf("！！！BUG Deleting nonexistent file (%04x:%d), %d\n", inode->i_dev,
+    printf("!!BUG Deleting nonexistent file (%04x:%d), %d\n", inode->i_dev,
            inode->i_num, inode->i_nlinks);
     inode->i_nlinks = 1;
   }
@@ -592,11 +593,12 @@ int cmd_rm(const char* name) {
   psucc("文件删除成功");
   return 0;
 }
-/*sync命令，保持目前的所有修改信息*/
+
+/* 保持目前的所有修改信息 */
 int cmd_sync() {
   file* f;
   for (int fd = 0; fd < NR_OPEN; ++fd) {
-    if (f = fileSystem->filp[fd]) {
+    if ((f = fileSystem->filp[fd])) {
       iput(f->f_inode);
       delete f;
     }
@@ -616,33 +618,36 @@ int cmd_exit() {
 }
 
 int cmd_dd(const char* name) {
-  int nums,fd,i;
-  char* pathname = new char[strlen(name)+1];
+  int nums, fd, i;
+  char* pathname = new char[strlen(name) + 1];
   if (sscanf(name, "%d %s", &nums, pathname) == 2) {
-        char* data = new char[nums];
-        if (data == nullptr) {
-            fprintf(stderr, "Failed to allocate memory.\n");
-            return -EEXIST;
-        }
-        for (int i = 0; i < nums; ++i) {
-            data[i] = 'A' + (rand() % 26); // Generate random uppercase letters for demonstration
-        }
-        fd = sys_open(pathname, O_APPEND, S_IFREG);   
-        if (fd < 0) {
-          return fd;
-        } 
-        i = sys_write(fd, data, strlen(data));
-        if (i < 0) {
-          sys_close(fd);
-          return i;
-        }
-        psucc("添加成功");
-        sys_close(fd);
-        delete[] data;
-        return 0;
-    } else {
-        return -EINVAL;
+    char* data = new char[nums];
+    if (data == nullptr) {
+      fprintf(stderr, "Failed to allocate memory.\n");
+      return -EEXIST;
     }
+    for (int i = 0; i < nums; ++i) {
+      data[i] =
+          'A' +
+          (rand() % 26);  // Generate random uppercase letters for demonstration
+    }
+    fd = sys_open(pathname, O_APPEND, S_IFREG);
+    if (fd < 0) {
+      return fd;
+    }
+    i = sys_write(fd, data, strlen(data));
+    if (i < 0) {
+      sys_close(fd);
+      return i;
+    }
+    psucc("添加成功");
+    sys_close(fd);
+    delete[] data;
+    return 0;
+  } else {
+    return -EINVAL;
+  }
+  return 0;
 }
 
 void myhint(int errorCode) {

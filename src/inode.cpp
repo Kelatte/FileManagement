@@ -133,7 +133,7 @@ void free_inode(struct m_inode *inode) {
   if (!inode) return;
   /*如果要清空的文件节点有其他节点指向它，则说明出现bug*/
   if (inode->i_nlinks) {
-    printf("！！！BUG trying to free inode with links");
+    printf("!!!BUG trying to free inode with links");
     return;
   }
   if (!(sb = get_super(inode->i_dev)))
