@@ -209,13 +209,17 @@ struct m_inode *dir_namei(const char *pathname, int *namelen,
   /*如果父目录字符长度为0，即返回当前工作目录，否则进行查询*/
   if (len == 0) {
     fileSystem->current->i_count++;
+		delete[] _pathname;
     return fileSystem->current;
   }
   _pathname[len] = 0;
   // strncat(pathdir, _pathname, len);
   // _pathname[len] = 0;
-  // 给出指定路径的inode
-  if (!(dir = get_inode(_pathname))) return NULL;
+  if (!(dir = get_inode(_pathname))) {
+		delete[] _pathname;
+    return NULL;
+  }
+	delete[] _pathname;
   return dir;
 }
 
