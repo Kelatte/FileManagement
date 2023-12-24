@@ -444,6 +444,7 @@ int cmd_touch(const char* filename, int mode) {
     return -ENOENT;
   }
   bh = find_entry(&dir, basename, namelen, &de);
+  // 应该是找不到文件的，如果找到了说明文件存在，不能重复创建。
   if (bh) {
     brelse(bh);
     iput(dir);

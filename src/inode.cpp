@@ -178,7 +178,7 @@ struct m_inode *new_inode(int dev) {
   }
   set_bit(j, bh->b_data);
   bh->b_dirt = 1;
-
+  brelse(bh);
   //初始化inode
   inode->i_count = 1;
   inode->i_nlinks = 1;
