@@ -85,7 +85,8 @@ void cmd() {
       myhint(code);
     } else if (command.compare("vi") == 0) {  // command is copy
       const char* pa = path.c_str();
-      cmd_vi(pa);
+      int code = cmd_vi(pa);
+      myhint(code);
     } else if (command.compare("sync") == 0) {
       cmd_sync();
     } else if (command.compare("dd") == 0) {
