@@ -637,6 +637,7 @@ int cmd_dd(const char* name) {
         }
         psucc("添加成功");
         sys_close(fd);
+        delete[] data;
         return 0;
     } else {
         return -EINVAL;
