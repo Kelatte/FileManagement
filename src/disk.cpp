@@ -23,6 +23,7 @@ static buffer_head* getblk(int block) {
 
   if (!blocks.count(block)) {
     if (freeblocks.size() >= BUFFER_SIZE) {
+      // printf("try to del free\n");
       int f = *freeblocks.begin();
       bh = blocks[f];
       freeblocks.erase(f);
@@ -35,10 +36,11 @@ static buffer_head* getblk(int block) {
     bh->b_blocknr = block;
   }
   bh->b_count = 1;
+  memset(bh->b_data, 0, sizeof(buffer_block));
   bh->b_dirt = 0;
   //刚刚申请的内存还未读入数据块
   bh->b_uptodate = 0;
-
+  // 注意全部要初始化
   blocks[block] = bh;
   return bh;
 }
