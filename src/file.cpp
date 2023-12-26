@@ -123,6 +123,7 @@ int file_write(struct m_inode* inode, struct file* filp, char* buf, int count) {
     pos = filp->f_pos;
   while (i < count) {
     if (!(block = create_block(inode, pos / BLOCK_SIZE))) break;
+    // printf("get block: %d\t%ld\n", block, pos);
     if (!(bh = bread(block))) break;
     c = pos % BLOCK_SIZE;
     p = c + bh->b_data;

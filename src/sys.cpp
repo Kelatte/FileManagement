@@ -635,7 +635,7 @@ int cmd_dd(const char* name) {
     if (fd < 0) {
       return fd;
     }
-    i = sys_write(fd, data, strlen(data));
+    i = sys_write(fd, data, nums);
     if (i < 0) {
       sys_close(fd);
       return i;

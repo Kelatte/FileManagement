@@ -79,8 +79,8 @@ void mount_root(void) {
   printf("system load!\n");
 }
 void initialize_block(int dev) {
-  realse_all_blocks();
   realse_inode_table();
+  realse_all_blocks();
   auto ds = new d_super_block;
   memset(ds, 0, sizeof(d_super_block));
   ds->s_imap_blocks = 3; // <= I_MAP_SLOTS;
@@ -110,10 +110,30 @@ void initialize_block(int dev) {
   bwrite(1, (char*)ds);
   read_super(dev);
   auto inode = new_inode(dev);
+
+  inode->i_num = ROOT_INO;
+  inode->i_mode = S_IFDIR;
+  inode->i_size = 32;
   inode->i_dirt = 1;
+  inode->i_mtime = inode->i_atime = CurrentTime();
   inode->i_zone[0] = new_block(inode->i_dev);
-  realse_all_blocks();
+  // printf("inode data block: %d\n", inode->i_zone[0]);
+  buffer_head* data = bread(inode->i_zone[0]);
+  auto de = (struct dir_entry*)data->b_data;
+  /*加入. 和 .. 两个子目录*/
+  de->inode = inode->i_num;
+  strcpy(de->name, ".");
+  de++;
+  de->inode = inode->i_num;
+  strcpy(de->name, "..");
+
+  /*由于一个目录节点新建时，有父目录指向它，加上 .
+   * 目录项指向自己，故i_nlinks=2*/
+  inode->i_nlinks = 2;
+  data->b_dirt = 1;
+  brelse(data);
   realse_inode_table();
+  realse_all_blocks();
   mount_root();
   exit(0);
 }
