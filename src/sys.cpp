@@ -283,7 +283,7 @@ int cmd_ls(string s) {
 }
 
 
-/*stat命令，显示文件详细信息*/
+// stat命令，显示文件详细信息
 int cmd_stat(string path) {
   const char* basename;
   int namelen;
@@ -333,7 +333,7 @@ int cmd_stat(string path) {
 }
 
 
-/*cd命令，移动工作目录*/
+// cd命令，移动工作目录
 int cmd_cd(string path) {
   struct m_inode* dir = NULL;
 
@@ -354,7 +354,7 @@ int cmd_cd(string path) {
   return 0;  // 返回0表示cd命令执行成功
 }
 
-/*pwd命令，输出当前路径名*/
+// pwd命令，输出当前路径名
 int cmd_pwd() {
   struct m_inode* dir = NULL;  // 目录的i节点指针
   string pwd = "";  // 存储当前路径名的字符串
@@ -428,7 +428,7 @@ int cmd_cat(string path) {
 }
 
 
-/*vi指令，可以在文件末尾增添内容*/
+// vi指令，可以在文件末尾增添内容
 int cmd_vi(string path) {
   int fd, size, i;
   string in = "";
@@ -462,7 +462,7 @@ int cmd_vi(string path) {
   return 0;  // 返回0表示vi指令执行成功
 }
 
-/*mkdir命令，创建一个新的文件夹（目录）*/
+// mkdir命令，创建一个新的文件夹（目录）
 int cmd_mkdir(const char* pathname, int mode) {
   const char* basename;
   int namelen;
@@ -562,52 +562,71 @@ int cmd_mkdir(const char* pathname, int mode) {
   return 0;  // 返回0表示mkdir命令执行成功
 }
 
-/*touch命令,创建一个普通的文件节点*/
+// touch命令,创建一个普通的文件节点
 int cmd_touch(const char* filename, int mode) {
   const char* basename;
   int namelen;
   struct m_inode *dir, *inode;
   struct buffer_head* bh;
   struct dir_entry* de;
+
+  // 获取父目录的i节点和新文件的基本信息
   if (!(dir = dir_namei(filename, &namelen, &basename))) return -ENOENT;
+
+  // 如果文件名为空，说明路径不存在，释放目录i节点并返回错误码
   if (!namelen) {
     iput(dir);
     return -ENOENT;
   }
+
+  // 判断要创建的文件是否已经存在
   bh = find_entry(&dir, basename, namelen, &de);
-  // 应该是找不到文件的，如果找到了说明文件存在，不能重复创建。
+
+  // 如果找到了文件，说明文件已存在，不能重复创建，释放资源并返回错误码
   if (bh) {
     brelse(bh);
     iput(dir);
     return -EEXIST;
   }
+
+  // 开始创建新文件，首先分配新的i节点
   inode = new_inode(dir->i_dev);
+
+  // 如果分配i节点失败，释放父目录i节点并返回错误码
   if (!inode) {
     iput(dir);
     return -ENOSPC;
   }
+
+  // 设置新文件的属性，包括文件类型、修改时间等
   inode->i_mode = mode;
   inode->i_mtime = inode->i_atime = CurrentTime();
   inode->i_dirt = 1;
 
+  // 将新文件插入到父目录中
   bh = add_entry(dir, basename, namelen, &de);
+
+  // 如果插入文件项失败，释放所有资源
   if (!bh) {
     iput(dir);
     inode->i_nlinks = 0;
     iput(inode);
     return -ENOSPC;
   }
+
+  // 插入文件项成功，设定初始值，释放资源
   de->inode = inode->i_num;
   bh->b_dirt = 1;
-  // printf("%d %d\n",dir->i_count,inode->i_count);
   iput(dir);
   iput(inode);
   brelse(bh);
+
   psucc("文件创建成功");
-  return 0;
+
+  return 0;  // 返回0表示touch命令执行成功
 }
 
-/*rmdir命令，删除一个空的文件夹（目录）*/
+// rmdir命令，删除一个空的文件夹（目录）
 int cmd_rmdir(const char* name) {
   const char* basename;
   int namelen;
@@ -615,22 +634,32 @@ int cmd_rmdir(const char* name) {
   struct buffer_head* bh;
   struct dir_entry* de;
 
+  // 获取父目录的i节点和要删除的目录的基本信息
   if (!(dir = dir_namei(name, &namelen, &basename))) return -ENOENT;
+
+  // 如果目录名为空，说明路径不存在，释放目录i节点并返回错误码
   if (!namelen) {
     iput(dir);
     return -ENOENT;
   }
+
+  // 查找要删除的目录项
   bh = find_entry(&dir, basename, namelen, &de);
+
+  // 如果没有找到目录项，释放资源并返回错误码
   if (!bh) {
     iput(dir);
     return -ENOENT;
   }
+
+  // 获取要删除的目录的i节点
   if (!(inode = iget(dir->i_dev, de->inode))) {
     iput(dir);
     brelse(bh);
     return -EPERM;
   }
-  /*如果该文件正有其他进程正在使用*/
+
+  // 如果有其他进程正在使用该目录，释放资源并返回错误码
   if (inode->i_count > 1) {
     iput(dir);
     iput(inode);
@@ -638,45 +667,52 @@ int cmd_rmdir(const char* name) {
     return -EPERM;
   }
 
-  if (inode == dir) { /* we may not delete ".", but "../dir" is ok */
+  // 不允许删除当前目录"."
+  if (inode == dir) {
     iput(inode);
     iput(dir);
     brelse(bh);
     return -EPERM;
   }
-  /*删除的不是一个目录，而是其他类型文件*/
+
+  // 如果要删除的不是目录，而是其他类型的文件，释放资源并返回错误码
   if (!S_ISDIR(inode->i_mode)) {
     iput(inode);
     iput(dir);
     brelse(bh);
     return -ENOTDIR;
   }
+
+  // 如果目录不为空，释放资源并返回错误码
   if (!empty_dir(inode)) {
     iput(inode);
     iput(dir);
     brelse(bh);
     return -ENOTEMPTY;
   }
-  if (inode->i_nlinks != 2)
-    printf("empty directory has nlink!=2 (%d)\n", inode->i_nlinks);
-  /*删除目录索引*/
+
+  // 删除目录索引
   de->inode = 0;
   bh->b_dirt = 1;
   brelse(bh);
-  /*删除目录*/
+
+  // 删除目录
   inode->i_nlinks = 0;
   inode->i_dirt = 1;
-  /*修改父目录信息，由于子目录的..项被删除，所以父目录的i_nliks--*/
+
+  // 修改父目录信息，由于子目录的".."项被删除，所以父目录的i_nlinks--
   dir->i_nlinks--;
   dir->i_ctime = dir->i_mtime = CurrentTime();
   dir->i_dirt = 1;
   iput(dir);
   iput(inode);
+
   psucc("文件夹删除成功");
-  return 0;
+
+  return 0;  // 返回0表示rmdir命令执行成功
 }
 
-/*rm命令，删除操作，强制删除普通文件*/
+// rm命令，删除操作，删除普通文件
 int cmd_rm(const char* name) {
   const char* basename;
   int namelen;
@@ -684,44 +720,63 @@ int cmd_rm(const char* name) {
   struct buffer_head* bh;
   struct dir_entry* de;
 
+  // 获取父目录的i节点和要删除的文件的基本信息
   if (!(dir = dir_namei(name, &namelen, &basename))) return -ENOENT;
+
+  // 如果文件名为空，说明路径不存在，释放目录i节点并返回错误码
   if (!namelen) {
     iput(dir);
     return -ENOENT;
   }
+
+  // 查找要删除的文件项
   bh = find_entry(&dir, basename, namelen, &de);
+
+  // 如果没有找到文件项，释放资源并返回错误码
   if (!bh) {
     iput(dir);
     return -ENOENT;
   }
+
+  // 获取要删除的文件的i节点
   if (!(inode = iget(dir->i_dev, de->inode))) {
     iput(dir);
     brelse(bh);
     return -ENOENT;
   }
+
+  // 如果要删除的是目录，释放资源并返回错误码
   if (S_ISDIR(inode->i_mode)) {
     iput(inode);
     iput(dir);
     brelse(bh);
     return -EISDIR;
   }
-  /*如果文件的引用数已经为0，说明出现程序bug，并修正文件i_nlinks 为1*/
+
+  // 如果文件的引用数已经为0，说明出现程序bug，并修正文件i_nlinks为1
   if (!inode->i_nlinks) {
     printf("!!BUG Deleting nonexistent file (%04x:%d), %d\n", inode->i_dev,
            inode->i_num, inode->i_nlinks);
     inode->i_nlinks = 1;
   }
+
+  // 删除文件索引
   de->inode = 0;
   bh->b_dirt = 1;
   brelse(bh);
+
+  // 更新文件信息，减少引用数，修改修改时间，并释放资源
   inode->i_nlinks--;
   inode->i_dirt = 1;
   inode->i_ctime = CurrentTime();
   iput(inode);
   iput(dir);
+
   psucc("文件删除成功");
-  return 0;
+
+  return 0;  // 返回0表示rm命令执行成功
 }
+
 
 /* 保持目前的所有修改信息 */
 int cmd_sync() {
@@ -737,7 +792,8 @@ int cmd_sync() {
   psucc("保存成功");
   return 0;
 }
-/*exit命令，退出文件系统，将所有信息写回磁盘*/
+
+// exit命令，退出文件系统，将所有信息写回磁盘
 int cmd_exit() {
   iput(fileSystem->current);
   iput(fileSystem->root);
@@ -746,36 +802,58 @@ int cmd_exit() {
   return 0;
 }
 
+// dd命令，用于向文件追加指定数量的随机大写字母数据
 int cmd_dd(const char* name) {
   int nums, fd, i;
   char* pathname = new char[strlen(name) + 1];
+
+  // 从输入参数中解析出数据长度和文件路径
   if (sscanf(name, "%d %s", &nums, pathname) == 2) {
+
+    // 分配存储数据的内存空间
     char* data = new char[nums];
+
+    // 检查内存分配是否成功，如果失败则输出错误信息并返回错误码
     if (data == nullptr) {
       fprintf(stderr, "Failed to allocate memory.\n");
       return -EEXIST;
     }
+
+    // 生成指定数量的随机大写字母数据，用于演示目的
     for (int i = 0; i < nums; ++i) {
-      data[i] =
-          'A' +
-          (rand() % 26);  // Generate random uppercase letters for demonstration
+      data[i] = 'A' + (rand() % 26);
     }
+
+    // 打开文件，使用O_APPEND标志表示追加写入
     fd = sys_open(pathname, O_APPEND, S_IFREG);
+
+    // 如果打开文件失败，释放内存并返回错误码
     if (fd < 0) {
+      delete[] data;
       return fd;
     }
+
+    // 将生成的数据写入文件
     i = sys_write(fd, data, nums);
+
+    // 如果写入失败，关闭文件，释放内存，并返回错误码
     if (i < 0) {
       sys_close(fd);
+      delete[] data;
       return i;
     }
+
+    // 操作成功，输出提示信息，关闭文件，释放内存
     psucc("添加成功");
     sys_close(fd);
     delete[] data;
     return 0;
+
   } else {
+    // 参数解析失败，返回参数错误码
     return -EINVAL;
   }
+
   return 0;
 }
 

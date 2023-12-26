@@ -10,12 +10,12 @@ using namespace std;
 void cmd();
 void init();
 FileManageMent* fileSystem = new FileManageMent();
+
 int main() {
-  // let's go!!!
   init();
   cmd();
-  // system("pause");
 }
+
 void init() {
   init_inode_table();
   mount_root();
@@ -27,6 +27,7 @@ void fresh_cmd() {
   printfc(FG_BLUE, fileSystem->name);
   printfc(FG_WHITE, "> ");
 }
+
 void cmd() {
   fresh_cmd();
   string input, command, path, newPath;
@@ -52,38 +53,38 @@ void cmd() {
       const char* pa = path.c_str();
       int code = cmd_ls(pa);
       myhint(code);
-    } else if (command.compare("cd") == 0) {  // command is mkdir
+    } else if (command.compare("cd") == 0) {
       const char* pa = path.c_str();
       int code = cmd_cd(pa);
       myhint(code);
-    } else if (command.compare("mkdir") == 0) {  // command is mkdir
+    } else if (command.compare("mkdir") == 0) {
       const char* pa = path.c_str();
       int code = cmd_mkdir(pa, S_IFDIR);
       myhint(code);
-    } else if (command.compare("touch") == 0) {  // command is mkdir
+    } else if (command.compare("touch") == 0) {
       const char* pa = path.c_str();
       int code = cmd_touch(pa, S_IFREG);
       myhint(code);
-    } else if (command.compare("cat") == 0) {  // command is chdir
+    } else if (command.compare("cat") == 0) {
       const char* pa = path.c_str();
       int code = cmd_cat(pa);
       myhint(code);
-    } else if (command.compare("rmdir") == 0) {  // command is rmdir
+    } else if (command.compare("rmdir") == 0) {
       const char* pa = path.c_str();
       int code = cmd_rmdir(pa);
       myhint(code);
-    } else if (command.compare("rm") == 0) {  // command is opendir
+    } else if (command.compare("rm") == 0) {
       const char* pa = path.c_str();
       int code = cmd_rm(pa);
       myhint(code);
-    } else if (command.compare("stat") == 0) {  // command is readdir
+    } else if (command.compare("stat") == 0) {
       const char* pa = path.c_str();
       int code = cmd_stat(pa);
       myhint(code);
-    } else if (command.compare("pwd") == 0) {  // command is lldir
+    } else if (command.compare("pwd") == 0) {
       int code = cmd_pwd();
       myhint(code);
-    } else if (command.compare("vi") == 0) {  // command is copy
+    } else if (command.compare("vi") == 0) {
       const char* pa = path.c_str();
       int code = cmd_vi(pa);
       myhint(code);
@@ -92,8 +93,6 @@ void cmd() {
       const char* pa = str.c_str();
       int code = cmd_dd(pa);
       myhint(code);
-    } else if (command.compare("sync") == 0) {
-      cmd_sync();
     } else if (command.compare("init") == 0) {
       initialize_block(ROOT_DEV);
     } else {
