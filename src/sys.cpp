@@ -388,6 +388,7 @@ int cmd_cat(string path) {
   }
 
   // 获取文件大小
+  size = inode->i_size;
 
   // 分配足够大的缓冲区来存储文件内容
   char* buf = new char[size + 2];
@@ -410,17 +411,8 @@ int cmd_cat(string path) {
       printf("%c", buf[i]);
     }
     printf("\n");
-<<<<<<< HEAD
   } else {
     // 对于其他文件类型，以十六进制流形式输出文件内容
-=======
-    // for (i = 0; i < size; ++i) {
-    //   printf("%x ", buf[i]);
-    // }
-    // printf("\n");
-  } else  //其他文件类型以二进制流输出
-  {
->>>>>>> 81d3062 (文件file_read用memcpy加速读取，修改作者，以16进制输出目录)
     pinfoc("目录大小：" + GetFileSize(size) + '\n');
     printf("下以16进制输出：\n");
     for (i = 0; i < size; ++i) {
