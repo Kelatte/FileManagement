@@ -120,18 +120,22 @@ int file_read(struct m_inode* inode, struct file* filp, char* buf, int count) {
     // 从缓冲块中读取数据到用户缓冲区
     if (bh) {
       char* p = nr + bh->b_data;
-      while (chars-- > 0) {
-        buf[0] = *p;
-        buf++;
-        p++;
-      }
+      memcpy(buf, p, chars);
+      buf += chars;
+      // while (chars-- > 0) {
+      //   buf[0] = *p;
+      //   buf++;
+      //   p++;
+      // }
       brelse(bh);
     } else {
       // 若逻辑块号为0，说明文件大小不足，用0填充缺失的数据
-      while (chars-- > 0) {
-        buf[0] = 0;
-        buf++;
-      }
+      memset(buf, 0, chars);
+      buf += chars;
+      // while (chars-- > 0) {
+      //   buf[0] = 0;
+      //   buf++;
+      // }
     }
   }
   buf[0] = 0;

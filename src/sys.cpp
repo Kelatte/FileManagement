@@ -378,7 +378,7 @@ int cmd_cat(string path) {
   if (!(inode = get_inode(path.c_str()))) return -ENOENT;
 
   // 如果指定的路径为目录，执行cmd_stat命令以显示目录详细信息
-  if (inode->i_mode == S_IFDIR) return cmd_stat(path);
+  // if (inode->i_mode == S_IFDIR) return cmd_stat(path);
 
   // 打开文件以只读方式
   fd = sys_open(path, O_RDONLY, S_IFREG);
@@ -407,16 +407,27 @@ int cmd_cat(string path) {
     // 如果是普通文件，输出文件大小和十六进制表示的内容
     pinfoc("文件大小：" + GetFileSize(size) + '\n');
     for (i = 0; i < size; ++i) {
-      printf("%x", buf[i]);
+      printf("%c", buf[i]);
     }
     printf("\n");
+<<<<<<< HEAD
   } else {
     // 对于其他文件类型，以十六进制流形式输出文件内容
+=======
+    // for (i = 0; i < size; ++i) {
+    //   printf("%x ", buf[i]);
+    // }
+    // printf("\n");
+  } else  //其他文件类型以二进制流输出
+  {
+>>>>>>> 81d3062 (文件file_read用memcpy加速读取，修改作者，以16进制输出目录)
     pinfoc("目录大小：" + GetFileSize(size) + '\n');
+    printf("下以16进制输出：\n");
     for (i = 0; i < size; ++i) {
-      printf("%x", buf[i]);
+      printf("%x ", buf[i]);
+      if ((i+1) % sizeof(dir_entry) == 0) 
+        printf("\n");
     }
-    printf("\n");
   }
 
   // 关闭文件，释放i节点，释放缓冲区

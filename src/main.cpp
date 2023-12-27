@@ -23,7 +23,7 @@ void init() {
 }
 
 void fresh_cmd() {
-  printfc(FG_GREEN, "[Author:oy] ");
+  printfc(FG_GREEN, "[Team1:CabbageDog] ");
   printfc(FG_BLUE, fileSystem->name);
   printfc(FG_WHITE, "> ");
 }
