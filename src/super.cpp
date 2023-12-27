@@ -86,10 +86,13 @@ void initialize_block(int dev) {
   ds->s_imap_blocks = 3; // <= I_MAP_SLOTS;
   ds->s_zmap_blocks = 8; // <= Z_MAP_SLOTS;
   ds->s_magic = SUPER_MAGIC;
-  ds->s_firstdatazone = 700;
-  ds->s_nzones = (1<<16) - 700;
-  ds->s_ninodes = (ds->s_firstdatazone - 2 - ds->s_imap_blocks - ds->s_zmap_blocks) * INODES_PER_BLOCK;
-  ds->s_max_size = std::min(0ull + ds->s_nzones * BLOCK_SIZE, 0ull + BLOCK_SIZE * (7 + 512 + 512 * 512));
+  ds->s_firstdatazone = 659;
+  ds->s_nzones = 62000;
+  ds->s_ninodes = 20666;
+  // ds->s_nzones = (1<<16) - ds->s_firstdatazone;
+  // ds->s_ninodes = (ds->s_firstdatazone - 2 - ds->s_imap_blocks - ds->s_zmap_blocks) * INODES_PER_BLOCK;
+  ds->s_max_size = 268966912;
+  // ds->s_max_size = std::min(0ull + ds->s_nzones * BLOCK_SIZE, 0ull + BLOCK_SIZE * (7 + 512 + 512 * 512));
   ds->s_log_zone_size = 0;
   assert(ds->s_imap_blocks * 8 * BLOCK_SIZE >= ds->s_ninodes);
   assert(ds->s_zmap_blocks * 8 * BLOCK_SIZE >= ds->s_nzones);
@@ -100,11 +103,15 @@ void initialize_block(int dev) {
   auto buffer = new buffer_block;
   memset(buffer, 0, sizeof(buffer_block));
   for (i = 0; i < ds->s_imap_blocks; i++) {
+    if (i == 0) buffer[0] = 2;
     bwrite(block, buffer);
+    if (i == 0) buffer[0] = 0;
     block++;
   }
   for (i = 0; i < ds->s_zmap_blocks; i++) {
+    if (i == 0) buffer[0] = 2;
     bwrite(block, buffer);
+    if (i == 0) buffer[0] = 0;
     block++;
   }
   bwrite(1, (char*)ds);
