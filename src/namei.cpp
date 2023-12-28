@@ -146,11 +146,11 @@ struct m_inode *get_inode(const char *pathname) {
   struct dir_entry *de;
   if ((c = pathname[0]) == '/') {
     inode = fileSystem->root;
-    pathname++;  // 为什么++？？
+    pathname++; 
   } else if (c)
     inode = fileSystem->current;
   else
-    return NULL; /* empty name is bad */
+    return NULL; 
   inode->i_count++;
   while (1) {
     thisname = pathname;

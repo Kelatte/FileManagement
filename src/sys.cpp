@@ -620,7 +620,7 @@ int cmd_exit() {
 int cmd_dd(const char* name) {
   int nums, fd, i;
   char* pathname = new char[strlen(name) + 1];
-  if (sscanf(name, "%d %s", &nums, pathname) == 2) {
+  if (sscanf(name, "%d%s", &nums, pathname) == 2) {
     char* data = new char[nums];
     if (data == nullptr) {
       fprintf(stderr, "Failed to allocate memory.\n");
@@ -635,7 +635,7 @@ int cmd_dd(const char* name) {
     if (fd < 0) {
       return fd;
     }
-    i = sys_write(fd, data, strlen(data));
+    i = sys_write(fd, data, nums);
     if (i < 0) {
       sys_close(fd);
       return i;
