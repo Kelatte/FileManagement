@@ -187,6 +187,7 @@ struct m_inode *new_inode(int dev) {
   // inode->i_gid = current->egid;
   inode->i_dirt = 1;
   inode->i_num = j + i * 8192;
+  // printf("get i num: %d\n", inode->i_num);
   inode->i_mtime = inode->i_atime = inode->i_ctime = CurrentTime();
   return inode;
 }
