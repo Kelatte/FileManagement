@@ -4,6 +4,7 @@
  *  (C) 1991  Linus Torvalds
  */
 #include "fs.h"
+#include <cstring>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -198,10 +199,12 @@ int file_write(struct m_inode* inode, struct file* filp, char* buf, int count) {
     i += c;
 
     // 将数据从缓冲区写入逻辑块
-    while (c-- > 0) {
-      *(p++) = buf[0];
-      buf++;
-    }
+    memcpy(p, buf, c);
+    buf += c;
+    // while (c-- > 0) {
+    //   *(p++) = buf[0];
+    //   buf++;
+    // }
 
     brelse(bh);
   }
